@@ -1,36 +1,59 @@
 import 'package:flutter/material.dart';
-import '../data.dart'; // Import the file where the patient data is defined
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 // The main StatefulWidget that displays the list of patients
 class PatientsPage extends StatefulWidget {
   @override
-  _PatientsPageState createState() =>
-      _PatientsPageState(); // Create the state for PatientsPage
+  _PatientsPageState createState() => _PatientsPageState();
 }
 
 // The state class for PatientsPage, where the UI and logic are defined
 class _PatientsPageState extends State<PatientsPage> {
+  // List to store fetched data from Firestore
+  List<QueryDocumentSnapshot> data = [];
+
+  // Fetches data from the "patients" collection in Firestore and updates the local data list
+  getData() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection("patients").get();
+      // Add fetched documents to the data list
+      data.addAll(querySnapshot.docs);
+      // Update UI to reflect the new data
+      setState(() {});
+    } catch (e) {
+      // Log an error message if fetching data fails
+      print("Error fetching data: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch patient data when the widget is initialized
+    getData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // A Scaffold widget to provide the basic structure of the page (app bar, body)
+      // AppBar with title for the page
       appBar: AppBar(
-        title: Text('List of patients'), // AppBar title
+        title: const Text('List of patients'),
       ),
+      // Body containing a ListView to display the list of patients
       body: ListView.builder(
-        itemCount: patients
-            .length, // Number of items in the list (based on the number of patients)
+        itemCount: data.length, // Number of patients
         itemBuilder: (context, index) {
+          var patientData = data[index]; // Fetch individual patient data
           return ListTile(
-            leading:
-                Icon(Icons.person), // Icon displayed before each patient's name
-            title: Text(patients[index].name), // Display the patient's name
+            leading: const Icon(Icons.person), // Icon for each patient
+            title: Text(patientData['name']), // Display patient name
             trailing: IconButton(
-              icon:
-                  Icon(Icons.more_vert), // Icon for additional options
+              icon: const Icon(Icons.more_vert), // Icon for more options
               onPressed: () {
-                // When the user presses the button, show more patient details
-                _showPatientDetails(context, patients[index]);
+                // Show patient details in a modal when the button is pressed
+                _showPatientDetails(context, patientData);
               },
             ),
           );
@@ -39,68 +62,59 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
-  // Function to show patient details in a modal bottom sheet
-  void _showPatientDetails(BuildContext context, Patient patient) {
+  // Function to show detailed patient information in a modal bottom sheet
+  void _showPatientDetails(BuildContext context, QueryDocumentSnapshot patientData) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Allow the modal to take more space if necessary
+      isScrollControlled: true, // Allow modal to take more space if needed
       builder: (BuildContext context) {
         return Padding(
-          padding: const EdgeInsets.all(20.0), // Add padding inside the modal
+          padding: const EdgeInsets.all(20.0), // Add padding inside modal
           child: SingleChildScrollView(
-            // Make the content scrollable if it exceeds the screen height
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start, // Align the content to the left
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
+                // Title for patient details section
+                const Text(
                   'Patient Details',
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold), // Title with bold text
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                Divider(), // A horizontal line to separate sections
-                SizedBox(height: 10), // Add vertical space between elements
-                _buildDetailRow('Dernier RDV',
-                    ''), // Placeholder for the last appointment date
-                SizedBox(height: 8), // Vertical space between fields
-                _buildDetailRow('Prochain RDV',
-                    ''), // Placeholder for the next appointment date
-                SizedBox(height: 8),
-                _buildDetailRow('Group Sanguin',
-                    patient.groupSanguin), // Display blood group
-                SizedBox(height: 8),
+                const Divider(), // Horizontal divider for visual separation
+                const SizedBox(height: 10), // Vertical spacing between elements
+
+                // Patient information rows with labels and corresponding data values
+                _buildDetailRow('Dernier RDV', patientData['Dernier RDV'] ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Prochain RDV', patientData['Prochain RDV'] ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Group Sanguin', patientData['groupSanguin'] ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Date Naiss', patientData['dateNaiss'] ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Age', patientData['age']?.toString() ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Adresse', patientData['adresse'] ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Etat Civil', patientData['etatCivil'] ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Genre', patientData['genre'] ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Tel', patientData['tel'] ?? 'N/A'),
+                const SizedBox(height: 8),
+                _buildDetailRow('Tel WhatsApp', patientData['telWhatsApp'] ?? 'N/A'),
+                const SizedBox(height: 8),
                 _buildDetailRow(
-                    'Date Naiss', patient.dateNaiss), // Display date of birth
-                SizedBox(height: 8),
-                _buildDetailRow('Age', patient.age.toString()), // Display age
-                SizedBox(height: 8),
-                _buildDetailRow('Adresse', patient.adresse), // Display address
-                SizedBox(height: 8),
-                _buildDetailRow(
-                    'Etat Civil', patient.etatCivil), // Display marital status
-                SizedBox(height: 8),
-                _buildDetailRow('Genre', patient.genre), // Display gender
-                SizedBox(height: 8),
-                _buildDetailRow('Tel', patient.tel), // Display phone number
-                SizedBox(height: 8),
-                _buildDetailRow('Tel WhatsApp',
-                    patient.telWhatsApp), // Display WhatsApp number
-                SizedBox(height: 8),
-                _buildDetailRow(
-                    'Email',
-                    patient.email.isNotEmpty
-                        ? patient.email
-                        : 'N/A'), // Display email or N/A if empty
-                SizedBox(height: 20), // Add space before the close button
+                  'Email',
+                  patientData['email'].isNotEmpty ? patientData['email'] : 'N/A',
+                ),
+                const SizedBox(height: 20), // Space before the close button
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(
-                          context); // Close the modal when the button is pressed
+                      // Close the modal when the button is pressed
+                      Navigator.pop(context);
                     },
-                    child: Text('Close'), // Text displayed on the button
+                    child: const Text('Close'), // Button label
                   ),
                 ),
               ],
@@ -111,16 +125,19 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
-  // Helper widget to build a row of details (label and value)
+  // Helper widget to build a row displaying label and value for patient details
   Widget _buildDetailRow(String label, String value) {
     return Row(
       children: [
-        Text('$label: ',
-            style:
-                TextStyle(fontWeight: FontWeight.bold)), // Label with bold font
+        // Label with bold font
+        Text(
+          '$label: ',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        // Value with flexible width to adjust to screen size
         Flexible(
-            child: Text(
-                value)), // The value (text) is flexible to adjust to screen width
+          child: Text(value),
+        ),
       ],
     );
   }
