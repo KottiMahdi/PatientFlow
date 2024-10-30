@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:management_cabinet_medical_mobile/pages/RDV_page.dart';
+import 'package:management_cabinet_medical_mobile/pages/agenda_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/Salle_dattente_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/home_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients_page.dart';
@@ -36,8 +36,9 @@ class _navigationbarState extends State<navigationbar> {
           children: <Widget>[
             const HomePage(),
             PatientsPage(),
+            AgendaPage(),
             const SalleDattentePage(),
-            const RdvPage(),
+
             // Displays the HomePage widget as the first page
           ],
         ),
@@ -103,7 +104,7 @@ class _navigationbarState extends State<navigationbar> {
                   width: 25, // Image width
                 ),
               ), // Icon for "RDV" (Appointments)
-              label: "RDV",
+              label: "Agenda",
             ),
             BottomNavigationBarItem(
               icon: Padding(

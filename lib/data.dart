@@ -170,4 +170,13 @@ final List<Patient> patients = [
   ),
 ];
 
+class AgendaItem {
+  String title;
+  String date;
+  String description;
+
+  AgendaItem({required this.title, required this.date, required this.description});
+}
+
+
 
