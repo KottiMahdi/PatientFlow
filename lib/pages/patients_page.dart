@@ -7,8 +7,12 @@ class PatientsPage extends StatefulWidget {
 }
 
 class _PatientsPageState extends State<PatientsPage> {
+  // Controller for search bar
+  final TextEditingController searchController = TextEditingController();
+
   // List to store fetched data from Firestore
   List<QueryDocumentSnapshot> data = [];
+  List<QueryDocumentSnapshot> filteredData = []; // List to store filtered data
 
   // Fetches data from the "patients" collection in Firestore
   Future<void> getData() async {
@@ -18,6 +22,7 @@ class _PatientsPageState extends State<PatientsPage> {
       // Update the data list with fetched documents
       setState(() {
         data = querySnapshot.docs;
+        filteredData = data; // Initially display all data
       });
     } catch (e) {
       // Log an error if fetching data fails
@@ -25,10 +30,38 @@ class _PatientsPageState extends State<PatientsPage> {
     }
   }
 
+// Filter patients based on the search query
+  void filterSearchResults(String query) {
+    List<QueryDocumentSnapshot> searchResults = [];
+    if (query.isEmpty) {
+      searchResults = data;
+    } else {
+      searchResults = data.where((patient) {
+        String name = patient['name'].toString().toLowerCase();
+        return name.startsWith(query.toLowerCase());
+      }).toList();
+    }
+    setState(() {
+      filteredData = searchResults;
+    });
+  }
+/*This initState method:
+  Calls getData() to load patient data from Firestore.
+  Sets up a listener on the search bar input to filter patient
+  data in real-time, updating the list whenever the user types.*/
   @override
   void initState() {
     super.initState();
     getData(); // Fetch patient data
+    searchController.addListener(() {
+      filterSearchResults(searchController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -46,6 +79,7 @@ class _PatientsPageState extends State<PatientsPage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
+                controller: searchController,
                 decoration: InputDecoration(
                   hintText: 'Searching',
                   hintStyle: const TextStyle(color: Colors.grey),
@@ -61,7 +95,7 @@ class _PatientsPageState extends State<PatientsPage> {
             ),
             // Conditionally display message or list of patients
             Expanded(
-              child: data.isEmpty
+              child: filteredData.isEmpty
                   ? const Center(
                 child: Text(
                   'No Patients',
@@ -69,9 +103,9 @@ class _PatientsPageState extends State<PatientsPage> {
                 ),
               )
                   : ListView.builder(
-                  itemCount: data.length,
+                  itemCount: filteredData.length,
                   itemBuilder: (context, index) {
-                  var patientData = data[index];
+                  var patientData = filteredData[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     child: Card( // Card
@@ -79,28 +113,25 @@ class _PatientsPageState extends State<PatientsPage> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: ListTile(
+                        leading: const Icon(Icons.person, color: Colors.blue),
                         title: Text(patientData['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(patientData['email']),
+                        subtitle: Text('Age: ${patientData['age']}'),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.phone, color: Colors.blue),
+                              icon: const Icon(Icons.more_vert, color: Colors.blue),
                               onPressed: () {
                                 // Call patient
+                                _showPatientDetails(context, patientData);
                               },
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.message, color: Colors.green),
-                              onPressed: () {
-                                // WhatsApp message to patient
-                              },
-                            ),
+
                           ],
                         ),
                         onTap: () {
                           // Show patient details in a modal
-                          _showPatientDetails(context, patientData);
+
                         },
                       ),
                     ),
@@ -111,7 +142,7 @@ class _PatientsPageState extends State<PatientsPage> {
           ],
         ),
       ),
-      
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // Add patient action

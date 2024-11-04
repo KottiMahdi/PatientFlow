@@ -73,7 +73,7 @@ class _navigationbarState extends State<navigationbar> {
                 padding: const EdgeInsets.only(top: 15.0),
                 // Padding for the image icon
                 child: Image.asset(
-                  'assets/images/home.png', // Path to the image asset
+                  'assets/images/accueil.png', // Path to the image asset
                   fit: BoxFit.contain, // Ensures image fits well
                   width: 25, // Image width
                 ),
@@ -87,7 +87,7 @@ class _navigationbarState extends State<navigationbar> {
                 padding: const EdgeInsets.only(top: 15.0),
                 // Padding for the image icon
                 child: Image.asset(
-                  'assets/images/people.png', // Path to the image asset
+                  'assets/images/patient.png', // Path to the image asset
                   fit: BoxFit.contain, // Ensures image fits well
                   width: 25, // Image width
                 ),
@@ -99,7 +99,7 @@ class _navigationbarState extends State<navigationbar> {
                 padding: const EdgeInsets.only(top: 15.0),
                 // Padding for the image icon
                 child: Image.asset(
-                  'assets/images/calendar.png', // Path to the image asset
+                  'assets/images/ordre-du-jour.png', // Path to the image asset
                   fit: BoxFit.contain, // Ensures image fits well
                   width: 25, // Image width
                 ),
@@ -111,7 +111,7 @@ class _navigationbarState extends State<navigationbar> {
                 padding: const EdgeInsets.only(top: 15.0),
                 // Padding for the image icon
                 child: Image.asset(
-                  'assets/images/hourglass.png', // Path to the image asset
+                  'assets/images/event-processing.png', // Path to the image asset
                   fit: BoxFit.contain, // Ensures image fits well
                   width: 25, // Image width
                 ),
@@ -123,20 +123,14 @@ class _navigationbarState extends State<navigationbar> {
                 padding: const EdgeInsets.only(top: 15.0),
                 // Padding for the image icon
                 child: Image.asset(
-                  'assets/images/cogwheel.png', // Path to the image asset
+                  'assets/images/profil.png', // Path to the image asset
                   fit: BoxFit.contain, // Ensures image fits well
                   width: 25, // Image width
                 ),
               ), // Icon for "Settings"
-              label: "Settings",
+              label: "Profile",
             ),
           ],
-        ),
-
-        // App bar at the top with the title of the app
-        appBar: AppBar(
-          title:
-              const Text("Management Medical Office"), // Title for the app bar
         ),
       ),
     );

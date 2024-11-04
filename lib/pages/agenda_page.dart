@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../data.dart';
 
 class AgendaPage extends StatefulWidget {
@@ -8,14 +7,56 @@ class AgendaPage extends StatefulWidget {
 }
 
 class _AgendaPageState extends State<AgendaPage> {
-  // List of agenda items
-  List<AgendaItem> agendaItems = [
-    AgendaItem(title: "Team Meeting", date: "2024-11-01", description: "Monthly team meeting to discuss project updates."),
-    AgendaItem(title: "Code Review", date: "2024-11-05", description: "Reviewing code submissions from the latest sprint."),
-    AgendaItem(title: "Design Session", date: "2024-11-10", description: "Brainstorming session for new design features.")
-  ];
 
-  // Method to show dialog and add new item
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Agenda"),
+      ),
+      body: ListView.builder(
+        itemCount: agendaItems.length,
+        itemBuilder: (context, index) {
+          final item = agendaItems[index];
+          return Card(
+            margin: EdgeInsets.all(8),
+            child: ListTile(
+              title: Text(item.title),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Date: ${item.date}"),
+                  SizedBox(height: 4),
+                  Text(item.description),
+                ],
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.green),
+                    onPressed: () => _editAgendaItem(index),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _deleteAgendaItem(index),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addAgendaItem,
+        child: Icon(Icons.add),
+        backgroundColor: Colors.blueAccent.shade400,
+        foregroundColor: Colors.white,
+      ),
+    );
+  }
+
+  // Method to show a dialog for adding a new agenda item
   void _addAgendaItem() {
     final _titleController = TextEditingController();
     final _descriptionController = TextEditingController();
@@ -44,7 +85,7 @@ class _AgendaPageState extends State<AgendaPage> {
                     context: context,
                     initialDate: selectedDate,
                     firstDate: DateTime(2020),
-                    lastDate: DateTime(2030),
+                    lastDate: DateTime(2040),
                   );
                   if (pickedDate != null) {
                     setState(() {
@@ -90,51 +131,7 @@ class _AgendaPageState extends State<AgendaPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Agenda"),
-      ),
-      body: ListView.builder(
-        itemCount: agendaItems.length,
-        itemBuilder: (context, index) {
-          final item = agendaItems[index];
-          return Card(
-            margin: EdgeInsets.all(8),
-            child: ListTile(
-              title: Text(item.title),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Date: ${item.date}"),
-                  SizedBox(height: 4),
-                  Text(item.description),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => _editAgendaItem(index),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => _deleteAgendaItem(index),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addAgendaItem,
-        child: Icon(Icons.add),
-      ),
-    );
-  }
+  // Method to show a dialog for editing an existing agenda item
   void _editAgendaItem(int index) {
     final _titleController = TextEditingController(text: agendaItems[index].title);
     final _descriptionController = TextEditingController(text: agendaItems[index].description);
@@ -207,9 +204,10 @@ class _AgendaPageState extends State<AgendaPage> {
     );
   }
 
+  // Method to delete an agenda item
   void _deleteAgendaItem(int index) {
     setState(() {
       agendaItems.removeAt(index);
     });
-  }}
-
+  }
+}
