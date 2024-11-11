@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data.dart';
+import '../../data.dart';
 
 class AgendaPage extends StatefulWidget {
   @override
