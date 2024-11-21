@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'add_patient_page.dart';
+import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
 
 class PatientsPage extends StatefulWidget {
   @override
@@ -10,66 +9,38 @@ class PatientsPage extends StatefulWidget {
 
 class _PatientsPageState extends State<PatientsPage> {
   final TextEditingController searchController = TextEditingController();
-  final FocusNode searchFocusNode = FocusNode(); // Add FocusNode for the search bar
-  List<QueryDocumentSnapshot> data = [];
+  final FocusNode searchFocusNode = FocusNode();
   List<QueryDocumentSnapshot> filteredData = [];
-  bool isLoading = true; // Tracks loading state for data fetching
+  String searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    getData(); // Fetch data when page loads
     searchController.addListener(() {
-      filterSearchResults(searchController.text); // Listen for search query changes
+      setState(() {
+        searchQuery = searchController.text; // Update search query
+      });
     });
-    // Add a listener to the FocusNode to rebuild the widget when focus changes
     searchFocusNode.addListener(() {
-    setState(() {});
+      setState(() {});
     });
   }
 
   @override
   void dispose() {
-    // Dispose of the FocusNode and TextEditingController
     searchFocusNode.dispose();
-    searchController.dispose(); // Dispose controller when page is closed
+    searchController.dispose();
     super.dispose();
   }
 
-  // Fetches data from Firestore
-  Future<void> getData() async {
-    setState(() {
-      isLoading = true; // Start loading
-    });
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection("patients").get();
-      setState(() {
-        data = querySnapshot.docs; // Store fetched data
-        filteredData = data;       // Set filtered data to show all patients initially
-        isLoading = false;         // End loading
-      });
-    } catch (e) {
-      print("Error fetching data: $e");
-      setState(() {
-        isLoading = false;         // Ensure loading stops on error
-      });
-    }
-  }
-
-  // Filters patient list based on search query
-  void filterSearchResults(String query) {
-    List<QueryDocumentSnapshot> searchResults = [];
-    if (query.isEmpty) {
-      searchResults = data; // Show all patients if query is empty
-    } else {
-      searchResults = data.where((patient) {
-        String name = patient['name'].toString().toLowerCase();
-        return name.startsWith(query.toLowerCase()); // Search by name prefix
-      }).toList();
-    }
-    setState(() {
-      filteredData = searchResults; // Update filtered data
-    });
+  // Filters patient data based on the search query
+  List<QueryDocumentSnapshot> filterSearchResults(
+      List<QueryDocumentSnapshot> data) {
+    if (searchQuery.isEmpty) return data; // Show all patients if search is empty
+    return data.where((patient) {
+      String name = patient['name'].toString().toLowerCase();
+      return name.startsWith(searchQuery.toLowerCase()); // Search by name prefix
+    }).toList();
   }
 
   @override
@@ -77,123 +48,147 @@ class _PatientsPageState extends State<PatientsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Patients List', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blueAccent.shade400,
       ),
       body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(), // Dismisses keyboard on tap outside search bar
-        child: RefreshIndicator(
-          onRefresh: getData, // Reloads data when user pulls to refresh
-          child: isLoading
-              ? Center(child: CircularProgressIndicator(color: Colors.blue)) // Show loading indicator if data is loading
-              : Column(
-            children: [
-
-              // Search bar with back and clear icons
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    // Back icon, shown only when the search bar is focused
-                    if (searchFocusNode.hasFocus)
-                      IconButton(
-                        icon: Icon(Icons.arrow_back),
-                        color: Colors.blueAccent,
-                        onPressed: () {
-                          // Unfocus the TextField to hide the keyboard and clear the search
-                          searchFocusNode.unfocus();
-                          searchController.clear(); // Clear the search input
-                          setState(() {}); // Update the UI
-                        },
-                      ),
-                    // Search text field
-                    Expanded(
-                      child: TextField(
-                        controller: searchController,
-                        focusNode: searchFocusNode, // Attach the FocusNode to the TextField
-                        onChanged: (value) {
-                          // Trigger state update to show or hide "X" icon
-                          setState(() {});
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'Search',
-                          hintStyle: const TextStyle(color: Colors.grey),
-                          prefixIcon: const Icon(Icons.search),
-                          suffixIcon: searchController.text.isNotEmpty
-                              ? IconButton(
-                            icon: Icon(Icons.clear),
-                            onPressed: () {
-                              searchController.clear(); // Clear text
-                              setState(() {}); // Update the UI to hide "X" icon
-                            },
-                          )
-                              : null,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey[200],
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Column(
+          children: [
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  if (searchFocusNode.hasFocus)
+                    IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      color: Colors.black,
+                      onPressed: () {
+                        searchFocusNode.unfocus();
+                        searchController.clear();
+                      },
+                    ),
+                  Expanded(
+                    child: TextField(
+                      controller: searchController,
+                      focusNode: searchFocusNode,
+                      decoration: InputDecoration(
+                        hintText: 'Search',
+                        hintStyle: const TextStyle(color: Colors.grey),
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: searchController.text.isNotEmpty
+                            ? IconButton(
+                          icon: Icon(Icons.clear),
+                          onPressed: () {
+                            searchController.clear();
+                          },
+                        )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
                         ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              // Patient list
-              Expanded(
-                child: filteredData.isEmpty
-                    ? const Center(
-                  child: Text(
-                    'No Patients',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
-                )
-                    : ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 80.0), // Adds space for the last card to stay above the button
-                  itemCount: filteredData.length,
-                  itemBuilder: (context, index) {
-                    var patientData = filteredData[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: ListTile(
-                          leading: const Icon(Icons.person, color: Colors.blue),
-                          title: Text(
-                            '${patientData['name']} ${patientData['prenom']}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text('Age: ${patientData['age']} | Assurance: ${patientData['assurance'].isNotEmpty ? patientData['assurance'] : 'N/A'} '),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.more_vert, color: Colors.blue),
-                            onPressed: () {
-                              _showPatientDetails(context, patientData); // Show patient details on click
-                            },
-                          ),
-                        ),
+                ],
+              ),
+            ),
+
+            // Patient List
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection("patients")
+                    .orderBy("createdAt", descending: true)
+                    .snapshots(), // Listen to real-time updates
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                        child: CircularProgressIndicator(
+                            color: Colors.blueAccent));
+                  }
+
+                  if (snapshot.hasError) {
+                    return const Center(
+                      child: Text(
+                        'Error loading data',
+                        style: TextStyle(color: Colors.red),
                       ),
                     );
-                  },
-                ),
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No Patients',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    );
+                  }
+
+                  final data = snapshot.data!.docs;
+                  final filteredData = filterSearchResults(data);
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80.0),
+                    itemCount: filteredData.length,
+                    itemBuilder: (context, index) {
+                      var patientData = filteredData[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 6.0),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: ListTile(
+                            leading: const Icon(Icons.person, color: Colors.blue),
+                            title: Text(
+                              '${patientData['name']} ${patientData['prenom']}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(
+                                'Assurance: ${patientData['assurance'].isNotEmpty ? patientData['assurance'] : 'N/A'} | Age: ${patientData['age']} '),
+                            trailing: IconButton(
+                              icon:
+                              const Icon(Icons.more_vert, color: Colors.blue),
+                              onPressed: () {
+                                _showPatientDetails(context, patientData);
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddPatientPage()),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Add patients'),
-        backgroundColor: Colors.blueAccent.shade400,
-        foregroundColor: Colors.white,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(left: 31),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddPatientPage()),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Add'),
+              backgroundColor: Colors.blueAccent.shade400,
+              foregroundColor: Colors.white,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -352,5 +347,4 @@ class _PatientsPageState extends State<PatientsPage> {
       ),
     );
   }
-
 }

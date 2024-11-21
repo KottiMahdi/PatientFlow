@@ -17,7 +17,7 @@ class _HomePageState extends State<HomePage> {
           'Home', // Set the title of the app bar
           style: TextStyle(color: Colors.white),  // Set text color to white
         ),
-        backgroundColor: Colors.blueAccent, // Set app bar background color
+        backgroundColor: Colors.blueAccent.shade400, // Set app bar background color
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0), // Padding around the list

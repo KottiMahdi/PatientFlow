@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:management_cabinet_medical_mobile/pages/navigation_bar.dart';
+import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
+import 'package:management_cabinet_medical_mobile/pages/patients/patients_page.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -23,7 +25,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home:   const navigationBar(),
+      home: const navigationBar(),
+      routes: {
+        '/patients': (context) => PatientsPage(),
+        '/addPatient': (context) => AddPatientPage(),
+      },
     );
   }
 }
