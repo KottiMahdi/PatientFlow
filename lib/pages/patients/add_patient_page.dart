@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:management_cabinet_medical_mobile/pages/patients/patients_page.dart';
-
-import '../navigation_bar.dart';
 
 class AddPatientPage extends StatefulWidget {
   @override
