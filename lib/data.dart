@@ -53,7 +53,7 @@ final List<Patient> patients = [
   ),
 ];
 
-// Class to store agenda item information
+// Class to store appointement item information
 class AgendaItem {
   final String title;
   final String date;
@@ -66,7 +66,7 @@ class AgendaItem {
   });
 }
 
-// List of agenda items
+// List of appointement items
 List<AgendaItem> agendaItems = [
   AgendaItem(
     title: "Team Meeting",

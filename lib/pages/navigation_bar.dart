@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:management_cabinet_medical_mobile/pages/agenda/agenda_page.dart';
-import 'package:management_cabinet_medical_mobile/pages/attente/Salle_dattente_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/home_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/patients_page.dart';
+import 'package:management_cabinet_medical_mobile/pages/profile/profile_page.dart';
+import 'package:management_cabinet_medical_mobile/pages/waiting_room/waiting_room_page.dart';
+
+import 'appointement/appointement_page.dart';
 
 // Define a StatefulWidget class for the navigation bar
 class navigationBar extends StatefulWidget {
@@ -26,11 +28,13 @@ class _NavigationBarState extends State<navigationBar> {
 
     return MaterialApp(
       home: Scaffold(
-        resizeToAvoidBottomInset: false, // Prevents bottom inset from resizing the widget tree
+        resizeToAvoidBottomInset:
+            false, // Prevents bottom inset from resizing the widget tree
         body: PageView(
           controller: _pageController, // Links PageView with PageController
           physics: const ScrollPhysics(), // Sets physics for scrolling
-          onPageChanged: (index) { // Called when user changes page
+          onPageChanged: (index) {
+            // Called when user changes page
             setState(() {
               _currentIndex = index; // Update the current tab index
             });
@@ -38,12 +42,14 @@ class _NavigationBarState extends State<navigationBar> {
           children: <Widget>[
             const HomePage(), // Home page
             PatientsPage(), // Patients page
-            AgendaPage(), // Appointments page
-            const SalleDattentePage(), // Waiting room page
+            AppointmentPage(), // Appointments page
+            WaitingRoomPage(), // Waiting room page
+            ProfilePage(),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed, // Keeps items in place without shifting
+          type: BottomNavigationBarType
+              .fixed, // Keeps items in place without shifting
           currentIndex: _currentIndex, // Sets the current selected index
           unselectedItemColor: Colors.grey, // Color for unselected icons
           selectedItemColor: Colors.blue, // Color for selected icon
@@ -52,22 +58,27 @@ class _NavigationBarState extends State<navigationBar> {
             fontSize: fontSize, // Set font size for selected label
           ),
           unselectedLabelStyle: TextStyle(
-            fontSize: fontSize - 1, // Slightly smaller font for unselected labels
+            fontSize:
+                fontSize - 1, // Slightly smaller font for unselected labels
           ),
-          onTap: (index) { // Triggered when a tab is tapped
+          onTap: (index) {
+            // Triggered when a tab is tapped
             setState(() {
               _currentIndex = index; // Update the current index
               _pageController.animateToPage(
                 index, // Move to the selected page
-                duration: const Duration(milliseconds: 300), // Duration of transition
-                curve: Curves.easeInOut, // Animation curve for smooth transition
+                duration:
+                    const Duration(milliseconds: 300), // Duration of transition
+                curve:
+                    Curves.easeInOut, // Animation curve for smooth transition
               );
             });
           },
           items: const [
             BottomNavigationBarItem(
               icon: Padding(
-                padding: EdgeInsets.only(top: 15.0), // Adds padding above the icon
+                padding:
+                    EdgeInsets.only(top: 15.0), // Adds padding above the icon
                 child: Icon(Icons.home), // Home icon
               ),
               label: "Home", // Label for Home tab

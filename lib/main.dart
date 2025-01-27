@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/patients': (context) => PatientsPage(),
         '/addPatient': (context) => AddPatientPage(),
+        //'/editPatient': (context) => EditPatientPage()
       },
     );
   }

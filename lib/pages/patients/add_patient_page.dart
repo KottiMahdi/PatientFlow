@@ -20,9 +20,6 @@ class _AddPatientPageState extends State<AddPatientPage> {
   final TextEditingController dateOfBirthController = TextEditingController();
 
   // Additional controllers
-  final TextEditingController genreController = TextEditingController();
-  final TextEditingController etatCivilController = TextEditingController();
-  final TextEditingController nationaliteController = TextEditingController();
   final TextEditingController adresseController = TextEditingController();
   final TextEditingController villeController = TextEditingController();
   final TextEditingController telController = TextEditingController();
@@ -30,16 +27,26 @@ class _AddPatientPageState extends State<AddPatientPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController dernierRdvController = TextEditingController();
   final TextEditingController prochainRdvController = TextEditingController();
-  final TextEditingController groupeSanguinController = TextEditingController();
-  final TextEditingController assurantController = TextEditingController();
-  final TextEditingController assuranceController = TextEditingController();
-  final TextEditingController relationController = TextEditingController();
-  final TextEditingController professionController = TextEditingController();
   final TextEditingController paysController = TextEditingController();
   final TextEditingController adresseParController = TextEditingController();
 
+// Reference to the "patients" collection in Firestore.
+// This allows interaction with the collection to perform CRUD operations
+// (Create, Read, Update, Delete) for patient records.
   CollectionReference patients =
-      FirebaseFirestore.instance.collection("patients");
+  FirebaseFirestore.instance.collection("patients");
+
+  // Dropdown selected values
+  String? selectedAssurance;
+  String? selectedAssurant;
+  String? selectedEtatCivil;
+  String? selectedNationalite;
+  String? selectedProfession;
+  String? selectedRelation;
+  String? selectedGroupSanguin;
+  String? selectedGenre;
+
+
 
   addPatient() async {
     if (_formKey.currentState!.validate()) {
@@ -52,7 +59,9 @@ class _AddPatientPageState extends State<AddPatientPage> {
         // Check if any of the parsed values are null (invalid input)
         if (CIN == null || codePostal == null || numeroAssurance == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Please enter valid numeric values for CIN, Code Postal, and Numero Assurance")),
+            SnackBar(
+                content: Text(
+                    "Please enter valid numeric values for CIN, Code Postal, and Numero Assurance")),
           );
           return;
         }
@@ -66,9 +75,9 @@ class _AddPatientPageState extends State<AddPatientPage> {
           "dateNaiss": dateOfBirthController.text,
           "codePostal": codePostalController.text,
           "numeroAssurance": numeroAssuranceController.text,
-          "genre": genreController.text,
-          "etatCivil": etatCivilController.text,
-          "nationalite": nationaliteController.text,
+          "genre": selectedGenre,
+          "etatCivil": selectedEtatCivil,
+          "nationalite": selectedNationalite,
           "adresse": adresseController.text,
           "ville": villeController.text,
           "tel": telController.text,
@@ -76,11 +85,11 @@ class _AddPatientPageState extends State<AddPatientPage> {
           "email": emailController.text,
           "Dernier RDV": dernierRdvController.text,
           "Prochain RDV": prochainRdvController.text,
-          "groupSanguin": groupeSanguinController.text,
-          "assurant": assurantController.text,
-          "assurance": assuranceController.text,
-          "relation": relationController.text,
-          "profession": professionController.text,
+          "groupSanguin": selectedGroupSanguin,
+          "assurant": selectedAssurant,
+          "assurance": selectedAssurance,
+          "relation": selectedRelation,
+          "profession": selectedProfession,
           "pays": paysController.text,
           "adressee": adresseParController.text,
           "createdAt": FieldValue.serverTimestamp(), // Add timestamp
@@ -95,8 +104,8 @@ class _AddPatientPageState extends State<AddPatientPage> {
         );
 
         // Navigate back to the PatientsPage or close the current screen
-        Navigator.pop(context);  // This will pop the current screen off the stack and return to the previous one
-
+        Navigator.pop(
+            context); // This will pop the current screen off the stack and return to the previous one
       } catch (e) {
         print("Error: $e");
         // Show an error message in case something goes wrong
@@ -104,6 +113,36 @@ class _AddPatientPageState extends State<AddPatientPage> {
           SnackBar(content: Text("Error adding patient: $e")),
         );
       }
+    }
+  }
+
+// Function to fetch dropdown options from Firestore for a specific document
+// - Retrieves a document from the "dropdown_options" collection
+// - Extracts all string values from the document and returns them as a list
+// - Handles errors gracefully and returns an empty list in case of failure
+  Future<List<String>> getDropdownOptions(String document) async {
+    try {
+      // Fetch the document from Firestore
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection("dropdown_options")
+          .doc(document)
+          .get();
+
+      if (!snapshot.exists) {
+        print("Document does not exist");
+        return [];
+      }
+
+      // Extract all fields from the document as a list of strings
+      final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
+      // Safely convert fields to a list of strings, assuming the values are either String or List<String>
+      return data.values
+          .whereType<String>() // Filters out non-string values
+          .toList();
+    } catch (e) {
+      print("Error fetching $document options: $e");
+      return []; // Return an empty list on error
     }
   }
 
@@ -118,9 +157,6 @@ class _AddPatientPageState extends State<AddPatientPage> {
     codePostalController.dispose();
     numeroAssuranceController.dispose();
     dateOfBirthController.dispose();
-    genreController.dispose();
-    etatCivilController.dispose();
-    nationaliteController.dispose();
     adresseController.dispose();
     villeController.dispose();
     telController.dispose();
@@ -128,14 +164,26 @@ class _AddPatientPageState extends State<AddPatientPage> {
     emailController.dispose();
     dernierRdvController.dispose();
     prochainRdvController.dispose();
-    groupeSanguinController.dispose();
-    assurantController.dispose();
-    assuranceController.dispose();
-    relationController.dispose();
-    professionController.dispose();
     paysController.dispose();
     adresseParController.dispose();
     super.dispose();
+  }
+
+  // Cache for dropdown data
+  Map<String, Future<List<String>>> dropdownCache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Preload dropdown options
+    dropdownCache['etatCivil'] = getDropdownOptions('etatCivil');
+    dropdownCache['nationalite'] = getDropdownOptions('nationalite');
+    dropdownCache['assurant'] = getDropdownOptions('assurant');
+    dropdownCache['assurance'] = getDropdownOptions('assurance');
+    dropdownCache['relation'] = getDropdownOptions('relation');
+    dropdownCache['profession'] = getDropdownOptions('profession');
+    dropdownCache['groupSanguin'] = getDropdownOptions('groupSanguin');
+    dropdownCache['genre'] = getDropdownOptions('genre');
   }
 
   @override
@@ -188,12 +236,24 @@ class _AddPatientPageState extends State<AddPatientPage> {
                   Divider(height: 32.0, thickness: 1),
 
                   // Additional fields with their respective controllers
-                  _buildTextField("Genre", genreController,
-                      Icons.person_pin_sharp, TextInputType.text),
-                  _buildTextField("Etat Civil", etatCivilController,
-                      Icons.people, TextInputType.text),
-                  _buildTextField("Nationalité", nationaliteController,
-                      Icons.flag, TextInputType.text),
+                  _buildDropdownField(
+                      "Genre",
+                      "genre",
+                      selectedGenre,
+                      Icons.transgender,
+                          (value) => setState(() => selectedGenre = value)),
+                  _buildDropdownField(
+                      "Etat Civil",
+                      "etatCivil",
+                      selectedEtatCivil,
+                      Icons.person,
+                      (value) => setState(() => selectedEtatCivil = value)),
+                  _buildDropdownField(
+                      "Nationalité",
+                      "nationalite",
+                      selectedNationalite,
+                      Icons.flag,
+                      (value) => setState(() => selectedNationalite = value)),
                   _buildTextField("Adresse", adresseController, Icons.home,
                       TextInputType.streetAddress),
                   _buildTextField("Ville", villeController, Icons.location_city,
@@ -206,16 +266,24 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       TextInputType.emailAddress),
                   _buildDateField("Dernier RDV", dernierRdvController),
                   _buildDateField("Prochain RDV", prochainRdvController),
-                  _buildTextField("Group Sanguin", groupeSanguinController,
-                      Icons.bloodtype, TextInputType.text),
-                  _buildTextField("Assurant", assurantController,
-                      Icons.account_box, TextInputType.text),
-                  _buildTextField("Assurance", assuranceController,
-                      Icons.verified_user, TextInputType.text),
-                  _buildTextField("Relation", relationController,
-                      Icons.family_restroom, TextInputType.text),
-                  _buildTextField("Profession", professionController,
-                      Icons.work, TextInputType.text),
+                  _buildDropdownField("Group Sanguin", "groupSanguin", selectedGroupSanguin,Icons.water_drop,
+                          (value) => setState(() => selectedGroupSanguin = value)),
+                  _buildDropdownField("Assurant", "assurant", selectedAssurant,Icons.verified_user,
+                      (value) => setState(() => selectedAssurant = value)),
+                  _buildDropdownField(
+                      "Assurance",
+                      "assurance",
+                      selectedAssurance,
+                      Icons.shield,
+                      (value) => setState(() => selectedAssurance = value)),
+                  _buildDropdownField("Relation", "relation", selectedRelation,Icons.group,
+                      (value) => setState(() => selectedRelation = value)),
+                  _buildDropdownField(
+                      "Profession",
+                      "profession",
+                      selectedProfession,
+                      Icons.work,
+                      (value) => setState(() => selectedProfession = value)),
                   _buildTextField(
                       "Pays", paysController, Icons.public, TextInputType.text),
                   _buildTextField("Adresse par", adresseParController,
@@ -305,6 +373,91 @@ class _AddPatientPageState extends State<AddPatientPage> {
         child: _buildTextField(
             label, controller, Icons.calendar_today, TextInputType.datetime),
       ),
+    );
+  }
+
+  Widget _buildDropdownField(String label, String document, String? value,
+  IconData icon, Function(String?) onChanged) {
+    // Fetch options from cache if available, otherwise load them using `getDropdownOptions`
+    dropdownCache.putIfAbsent(document, () => getDropdownOptions(document));
+
+    return FutureBuilder<List<String>>(
+      // The FutureBuilder uses this cached Future to directly display
+      // the options without re-fetching.
+      future: dropdownCache[document],
+      builder: (context, snapshot) {
+        // Show a loading spinner while waiting for data
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        // Display an error message if there was an issue loading the data
+        if (snapshot.hasError) {
+          return Text("Error loading $label options");
+        }
+
+        // Build the DropdownButtonFormField if data is successfully fetched
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: DropdownButtonFormField<String>(
+            // Currently selected value for the dropdown
+            value: value,
+
+            // Function to handle changes in selection
+            onChanged: onChanged,
+
+            // Create dropdown menu items from the fetched data
+            items: snapshot.data!
+                .map(
+                  (option) => DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(
+                      option,
+                      // Prevent text overflow with ellipsis
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+
+            // Styling for the dropdown
+            decoration: InputDecoration(
+              // Label for the dropdown field
+              labelText: label,
+
+              // Icon displayed inside the input field
+              prefixIcon: Icon(icon, color: Colors.blueAccent),
+
+              // Background color and padding for the input field
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 16.0, // Vertical padding
+                horizontal: 12.0, // Horizontal padding
+              ),
+
+              // Border styling for the input field
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12), // Rounded corners
+                borderSide: BorderSide.none, // No visible border
+              ),
+            ),
+
+            // Dropdown-specific configurations
+            isExpanded: true, // Expands dropdown to fit content width
+            dropdownColor: Colors.white, // Background color of the dropdown
+            icon: Icon(Icons.arrow_drop_down, color: Colors.blueAccent), // Updated dropdown icon,
+            iconSize: 30, // Size of the dropdown icon
+            elevation: 8, // Shadow depth for the dropdown
+            style: TextStyle(
+                color: Colors.black), // Text style inside the dropdown
+          ),
+        );
+      },
     );
   }
 }

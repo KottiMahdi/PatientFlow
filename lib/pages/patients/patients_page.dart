@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
+import 'package:management_cabinet_medical_mobile/pages/patients/antecedents_page.dart';
 import 'components/show_option_popup.dart';
 import 'components/show_patient_details.dart';
 
@@ -120,7 +121,6 @@ class _PatientsPageState extends State<PatientsPage> {
                         child: CircularProgressIndicator(
                             color: Colors.blueAccent)); // Show loading indicator while waiting
                   }
-
                   if (snapshot.hasError) {
                     return const Center(
                       child: Text(
@@ -178,6 +178,14 @@ class _PatientsPageState extends State<PatientsPage> {
                             onLongPress: () {
                               showOptionsPopup(context, patientData); // Show options popup on long press
                             },
+                            onTap: (){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AntecedentsPage(patientId: patientData.id),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       );
@@ -203,7 +211,7 @@ class _PatientsPageState extends State<PatientsPage> {
                 );
               },
               icon: const Icon(Icons.add), // Add icon
-              label: const Text('Add'), // Label for the button
+              label: const Text('Add Patient'), // Label for the button
               backgroundColor: Colors.blueAccent.shade400, // Background color
               foregroundColor: Colors.white, // Text and icon color
             ),
@@ -213,8 +221,4 @@ class _PatientsPageState extends State<PatientsPage> {
     );
   }
 
-  // This function would handle editing a patient's data (not implemented in this code)
-  void _editPatient(BuildContext context, Map<String, dynamic> patientData) {
-    // Navigate to the edit form or handle edit logic here
-  }
 }
