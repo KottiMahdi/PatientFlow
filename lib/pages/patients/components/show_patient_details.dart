@@ -38,7 +38,7 @@ void showPatientDetails(BuildContext context, QueryDocumentSnapshot patientData)
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.blueAccent,
+                            color: Color(0xFF2A79B0),
                           ),
                         ),
                       ),
@@ -101,7 +101,7 @@ void showPatientDetails(BuildContext context, QueryDocumentSnapshot patientData)
                   onPressed: () {
                     Navigator.pop(context); // Close the modal
                   },
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: Color(0xFF2A79B0),
                   label: const Text(
                     'Close',
                     style: TextStyle(color: Colors.white, fontSize: 16),
@@ -156,14 +156,14 @@ Widget _buildSectionHeader(String title) {
     margin: const EdgeInsets.symmetric(vertical: 8.0),
     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
     decoration: BoxDecoration(
-      color: Colors.blueAccent.withOpacity(0.1),
+      color: Color(0xFF2A79B0).withOpacity(0.1),
       borderRadius: BorderRadius.circular(8),
     ),
     child: Text(
       title,
       style: const TextStyle(fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.blueAccent),
+          color: Color(0xFF2A79B0)),
     ),
   );
 }

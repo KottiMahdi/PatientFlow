@@ -28,6 +28,7 @@ class _NavigationBarState extends State<navigationBar> {
 
     return MaterialApp(
       home: Scaffold(
+        backgroundColor: Colors.white,
         resizeToAvoidBottomInset:
             false, // Prevents bottom inset from resizing the widget tree
         body: PageView(
@@ -43,7 +44,7 @@ class _NavigationBarState extends State<navigationBar> {
             const HomePage(), // Home page
             PatientsPage(), // Patients page
             AppointmentPage(), // Appointments page
-            WaitingRoomPage(), // Waiting room page
+            WaitingRoomMainPage(), // Waiting room page
             ProfilePage(),
           ],
         ),
@@ -52,7 +53,7 @@ class _NavigationBarState extends State<navigationBar> {
               .fixed, // Keeps items in place without shifting
           currentIndex: _currentIndex, // Sets the current selected index
           unselectedItemColor: Colors.grey, // Color for unselected icons
-          selectedItemColor: Colors.blue, // Color for selected icon
+          selectedItemColor: Color(0xFF2A79B0), // Color for selected icon
           selectedLabelStyle: TextStyle(
             fontWeight: FontWeight.bold, // Bold label for selected tab
             fontSize: fontSize, // Set font size for selected label

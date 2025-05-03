@@ -1,247 +1,382 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
+import 'package:provider/provider.dart';
+import '../providers/patient_provider_waiting_room.dart';
+import 'appointement/Schedule_appointment.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
+  // Add this if not already defined
+  String userRole = 'Doctor'; // Default role, update as needed
+
+
+  @override
+  void initState() {
+    super.initState();
+    // If you need to fetch initial data, do it here or in the provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PatientProvider>(context, listen: false).fetchPatients();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final mediaQuery = MediaQuery.of(context);
+    // Use listen: true to rebuild when data changes
+    final patientProvider = Provider.of<PatientProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Home',
-          style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
+        title: const Text(
+          'Medical Management',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.blueAccent.shade400,
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(mediaQuery.size.width * 0.04), // Dynamic padding
-        children: [
-          _buildStatisticsDashboard(),
-          SizedBox(height: mediaQuery.size.height * 0.02),
-          _buildQuickActions(),
-          SizedBox(height: mediaQuery.size.height * 0.02),
-          _buildPatientAlerts(),
-          SizedBox(height: mediaQuery.size.height * 0.02),
-          _buildNotificationsPanel(),
-          SizedBox(height: mediaQuery.size.height * 0.02),
-          _buildHealthOverview(),
-          SizedBox(height: mediaQuery.size.height * 0.02),
-          _buildAgendaView(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatisticsDashboard() {
-    return CustomCard(
-      title: 'Statistics Dashboard',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildStatTile('Daily Visits', '5', Icons.calendar_today),
-          _buildStatTile('Weekly Visits', '15', Icons.calendar_view_week),
-          _buildStatTile('Patients on Hold', '2', Icons.access_time),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildQuickActionButton(
-            onPressed: () {},
-            icon: Icons.add,
-            label: "Add Patient",
-            color: Colors.blue,
+        backgroundColor: const Color(0xFF2A79B0),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.white),
+            onPressed: () {
+              // Add notification functionality
+            },
           ),
-          _buildQuickActionButton(
-            onPressed: () {},
-            icon: Icons.group,
-            label: "View Patients",
-            color: Colors.green,
-          ),
-          _buildQuickActionButton(
-            onPressed: () {},
-            icon: Icons.event,
-            label: "Add Event",
-            color: Colors.purple,
+          IconButton(
+            icon: const Icon(Icons.account_circle, color: Colors.white),
+            onPressed: () {
+              // Add profile functionality
+            },
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildPatientAlerts() {
-    return CustomCard(
-      title: 'Patient Alerts & Reminders',
-      child: Column(
-        children: [
-          _buildAlertTile(
-            'Missed Follow-Up for John Doe',
-            Icons.warning,
-            Colors.redAccent,
-          ),
-          _buildAlertTile(
-            'Upcoming Appointment: Jane Smith - 3:00 PM',
-            Icons.event,
-            Colors.blueAccent,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificationsPanel() {
-    return CustomCard(
-      title: 'Notifications',
-      child: Column(
-        children: [
-          _buildNotificationTile(
-            'System Update Available',
-            Icons.notifications,
-            Colors.orangeAccent,
-          ),
-          _buildNotificationTile(
-            'New Patient Contact Info Updated',
-            Icons.info,
-            Colors.lightBlueAccent,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHealthOverview() {
-    return CustomCard(
-      title: 'Patient Health Overview',
-      child: Column(
-        children: [
-          _buildHealthTile(
-            'Age Group: 30-40',
-            '12 Patients',
-            Icons.health_and_safety,
-            Colors.greenAccent,
-          ),
-          _buildHealthTile(
-            'Frequent Condition: Hypertension',
-            '8 Patients',
-            Icons.healing,
-            Colors.purpleAccent,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAgendaView() {
-    return CustomCard(
-      title: 'Agenda View',
-      child: Column(
-        children: [
-          _buildAgendaTile("Today's Agenda", Icons.today),
-          _buildAgendaTile("Filter by Appointment Type", Icons.filter_list),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatTile(String title, String trailing, IconData icon) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(title),
-      trailing: Text(trailing, style: const TextStyle(fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _buildAlertTile(String title, IconData icon, Color iconColor) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-    );
-  }
-
-  Widget _buildNotificationTile(String title, IconData icon, Color iconColor) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-    );
-  }
-
-  Widget _buildHealthTile(String title, String trailing, IconData icon, Color iconColor) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-      trailing: Text(trailing, style: const TextStyle(fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _buildAgendaTile(String title, IconData icon) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-    );
-  }
-
-  Widget _buildQuickActionButton({
-    required VoidCallback onPressed,
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, color: color),
-        label: Text(label, style: TextStyle(color: color)),
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          side: BorderSide(color: color, width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      body: patientProvider.isLoading
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Color(0xFF2A79B0) ),
+            SizedBox(height: 16),
+            Text(
+              'Loading profile...',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+              ),
+            ),
+          ],
         ),
-      ),
-    );
-  }
-}
-
-class CustomCard extends StatelessWidget {
-  final String title;
-  final Widget child;
-
-  const CustomCard({
-    Key? key,
-    required this.title,
-    required this.child,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
+      ) : SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Color(0xFF2A79B0),
+                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome, Dr. Smith',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    Text(
+                      userRole,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const Divider(),
-            child,
+
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Today: ${DateFormat('EEEE, d MMMM yyyy').format(patientProvider.selectedDate)}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today),
+                  onPressed: () async {
+                    final DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: patientProvider.selectedDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                      // Custom theme for date picker
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(
+                              primary: Color(0xFF2A79B0),
+                              onPrimary: Colors.white,
+                              onSurface: Color(0xFF2A79B0),
+                            ),
+                            textButtonTheme: TextButtonThemeData(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Color(0xFF2A79B0),
+                              ),
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (picked != null &&
+                        picked != patientProvider.selectedDate) {
+                      patientProvider.changeDate(picked);
+                    }
+                  },
+                ),
+              ],
+            ),
+
+            Row(
+              children: [
+                _buildStatusCard(
+                  context,
+                  Icons.people,
+                  patientProvider.waitingCount.toString(),
+                  'Waiting',
+                  Colors.green[100]!,
+                  Colors.green,
+                ),
+                _buildStatusCard(
+                  context,
+                  Icons.medical_services,
+                  patientProvider.inConsultationCount.toString(),
+                  'In Consultation',
+                  Colors.orange[100]!,
+                  Colors.orange,
+                ),
+                _buildStatusCard(
+                  context,
+                  Icons.check_circle,
+                  patientProvider.completedCount.toString(),
+                  'Completed',
+                  Colors.purple[100]!,
+                  Colors.purple,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            /// Quick Access Buttons section
+            Text(
+              'Quick Access',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+
+            // Row of quick action buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Add Patient button - navigates to patient registration page
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddPatientPage(),
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.person),
+                  label: Text('Add Patient'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF2A79B0),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                // Add Appointment button - navigates to appointment scheduler
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AppointmentSchedulerPage(onAppointmentAdded: () {}),
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.calendar_today),
+                  label: Text(
+                    'Add Appointment',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF2A79B0),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                )
+              ],
+            ),
+
+            const SizedBox(height: 24),
+            Text(
+              'Today\'s Appointments',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+
+            _buildAppointmentsList(context, patientProvider),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAppointmentsList(
+      BuildContext context, PatientProvider provider) {
+    final allTodaysPatients = [
+      ...provider.AppointmentsPatients,
+      ...provider.waitingPatients,
+      ...provider.inConsultationPatients,
+      ...provider.completedPatients,
+    ];
+
+    if (allTodaysPatients.isEmpty) {
+      return const Center(
+        child: Text('No appointments for today'),
+      );
+    }
+
+    return Column(
+      children: allTodaysPatients.map((patient) {
+        String displayStatus;
+        switch (patient.status) {
+          case PatientStatus.waiting:
+            displayStatus = 'Waiting';
+            break;
+          case PatientStatus.inConsultation:
+            displayStatus = 'In Consultation';
+            break;
+          case PatientStatus.completed:
+            displayStatus = 'Completed';
+            break;
+          default:
+            displayStatus = 'Scheduled';
+        }
+
+        return _buildAppointmentCard(
+          context,
+          patient.name,
+          patient.time,
+          'Appointment',
+          displayStatus,
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildStatusCard(
+    BuildContext context,
+    IconData icon,
+    String count,
+    String label,
+    Color backgroundColor,
+    Color? iconColor,
+  ) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Expanded(
+      child: Card(
+        color: backgroundColor,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+          child: Column(
+            children: [
+              Icon(icon, color: iconColor, size: 28),
+              const SizedBox(height: 8),
+              Text(
+                count,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: screenWidth < 400 ? 18 : 22,
+                    ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: screenWidth < 400 ? 11 : 14,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppointmentCard(
+    BuildContext context,
+    String patientName,
+    String time,
+    String purpose,
+    String status,
+  ) {
+    Color statusColor;
+    switch (status) {
+      case 'Waiting':
+        statusColor = Colors.green;
+        break;
+      case 'In Consultation':
+        statusColor = Colors.orange;
+        break;
+      case 'Completed':
+        statusColor = Colors.purple;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: const CircleAvatar(
+          child: Icon(Icons.person),
+        ),
+        title: Text(patientName),
+        subtitle: Text('$time - $purpose'),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: statusColor.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            status,
+            style: TextStyle(color: statusColor),
+          ),
+        ),
+        onTap: () {
+          // Navigate to patient details
+        },
       ),
     );
   }

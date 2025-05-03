@@ -1,0 +1,457 @@
+import 'package:flutter/material.dart';
+import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'appointement/Schedule_appointment.dart';
+
+// This enum defines the possible states of a patient in the system
+enum PatientStatus { waiting, inConsultation, completed, RDV }
+
+// HomePage is the main dashboard of the medical management application
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // Current user role - would typically be set from authentication system
+  final String userRole = 'Doctor'; // Example role
+
+  // Counters to track patient status statistics for display on dashboard
+  int waitingPatients = 0;
+  int inConsultation = 0;
+  int completedToday = 0;
+
+  // Date tracking for filtering appointments and stats
+  DateTime selectedDate = DateTime.now();
+  String formattedDate = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize formatted date string for database queries
+    formattedDate = DateFormat('d/M/yyyy').format(selectedDate);
+    // Fetch initial waiting room data when widget is created
+    fetchWaitingRoomData();
+  }
+
+  // This method retrieves real-time data from Firestore about patients in the waiting room
+  void fetchWaitingRoomData() {
+    // Set up a listener for the waiting_room collection
+    FirebaseFirestore.instance
+        .collection('waiting_room')
+        .snapshots()
+        .listen((snapshot) {
+      // Reset counters before counting
+      int waiting = 0;
+      int consultation = 0;
+      int completed = 0;
+
+      // Process each document in the collection
+      for (var doc in snapshot.docs) {
+        var data = doc.data();
+        String patientDate = data['date'] ?? '';
+
+        // Only count patients for the selected date
+        if (patientDate == formattedDate) {
+          String status = data['status'] ?? '';
+
+          // Increment appropriate counter based on patient status
+          if (status == 'waiting') {
+            waiting++;
+          } else if (status == 'inConsultation') {
+            consultation++;
+          } else if (status == 'completed') {
+            completed++;
+          }
+        }
+      }
+
+      // Update state with the new counts to trigger UI refresh
+      setState(() {
+        waitingPatients = waiting;
+        inConsultation = consultation;
+        completedToday = completed;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // App bar with title and action buttons
+      appBar: AppBar(
+        title: const Text(
+          'Medical Management',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Color(0xFF2A79B0),
+        actions: [
+          // Notifications button
+          IconButton(
+            icon: const Icon(
+              Icons.notifications,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              // Notification functionality would go here
+            },
+          ),
+          // Profile button
+          IconButton(
+            icon: const Icon(Icons.account_circle, color: Colors.white),
+            onPressed: () {
+              // Profile functionality would go here
+            },
+          ),
+        ],
+      ),
+      /// Main body content inside a scrollable container
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Doctor profile welcome section
+            Row(
+              children: [
+                // Doctor avatar
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Color(0xFF2A79B0),
+                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                ),
+                const SizedBox(width: 16),
+                // Doctor information
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome, Dr. Smith',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    Text(
+                      userRole,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Date display with calendar picker
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Display current selected date in formatted text
+                Text(
+                  'Today: ${DateFormat('EEEE, d MMMM yyyy').format(selectedDate)}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                // Calendar button to select different date
+                IconButton(
+                  icon: Icon(Icons.calendar_today),
+                  onPressed: () async {
+                    // Show date picker dialog
+                    final DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
+                    );
+                    // Update selected date if user chose a new date
+                    if (picked != null && picked != selectedDate) {
+                      setState(() {
+                        selectedDate = picked;
+                        formattedDate = DateFormat('d/M/yyyy').format(selectedDate);
+                      });
+                      // Refresh data for the new date
+                      fetchWaitingRoomData();
+                    }
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Patient status cards row - displays real-time statistics
+            Row(
+              children: [
+                // Waiting patients card
+                _buildStatusCard(
+                  context,
+                  Icons.people,
+                  waitingPatients.toString(),
+                  'Waiting',
+                  Colors.green[100]!,
+                  Colors.green,
+                ),
+                // In consultation patients card
+                _buildStatusCard(
+                  context,
+                  Icons.medical_services,
+                  inConsultation.toString(),
+                  'In Consultation',
+                  Colors.orange[100]!,
+                  Colors.orange,
+                ),
+                // Completed consultations card
+                _buildStatusCard(
+                  context,
+                  Icons.check_circle,
+                  completedToday.toString(),
+                  'Completed',
+                  Colors.purple[100]!,
+                  Colors.purple,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            /// Quick Access Buttons section
+            Text(
+              'Quick Access',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+
+            // Row of quick action buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Add Patient button - navigates to patient registration page
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AddPatientPage(),
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.person),
+                  label: Text('Add Patient'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF2A79B0),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                // Add Appointment button - navigates to appointment scheduler
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AppointmentSchedulerPage(onAppointmentAdded: () {}),
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.calendar_today),
+                  label: Text('Add Appointment', style: TextStyle(fontSize: 12),),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF2A79B0),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                )
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Today's Appointments Section
+            Text(
+              'Today\'s Appointments',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+
+            // Real-time appointment list from Firestore with StreamBuilder
+            StreamBuilder<QuerySnapshot>(
+              // Query waiting_room collection for the selected date
+              stream: FirebaseFirestore.instance
+                  .collection('waiting_room')
+                  .where('date', isEqualTo: formattedDate)
+              //.orderBy('time') // Commented out but could be used to sort by time
+                  .snapshots(),
+              builder: (context, snapshot) {
+                // Show loading indicator while data is being fetched
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                // Show message if no appointments are found
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Text('No appointments for today'),
+                  );
+                }
+
+                // Build a list of appointment cards from the data
+                return Column(
+                  children: snapshot.data!.docs.map((doc) {
+                    var data = doc.data() as Map<String, dynamic>;
+                    String name = data['name'] ?? 'Unknown';
+                    String time = data['time'] ?? 'No time';
+                    String status = data['status'] ?? 'RDV';
+
+                    // Convert status code to display text for user
+                    String displayStatus;
+                    switch(status) {
+                      case 'waiting':
+                        displayStatus = 'Waiting';
+                        break;
+                      case 'inConsultation':
+                        displayStatus = 'In Consultation';
+                        break;
+                      case 'completed':
+                        displayStatus = 'Completed';
+                        break;
+                      default:
+                        displayStatus = 'Scheduled';
+                    }
+
+                    // Create appointment card widget with data
+                    return _buildAppointmentCard(
+                      context,
+                      name,
+                      time,
+                      'Appointment',
+                      displayStatus,
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build status cards for patient statistics
+  Widget _buildStatusCard(
+      BuildContext context,
+      IconData icon,
+      String count,
+      String label,
+      Color backgroundColor,
+      Color? iconColor,
+      ) {
+    // Get screen width for responsive sizing
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Adjust padding based on screen size
+    final padding = screenWidth < 600 ? 12.0 : 16.0;
+
+    // Adjust icon size based on screen size
+    final iconSize = screenWidth < 600 ? 24.0 : 28.0;
+
+    // Expanded widget makes the card take equal space in the row
+    return Expanded(
+      child: Card(
+        color: backgroundColor,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+          child: Column(
+            children: [
+              // Status icon
+              Icon(icon, color: iconColor, size: 28),
+              const SizedBox(height: 8),
+              // Count value
+              Text(
+                count,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth < 400 ? 18 : 22,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              // Status label
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: screenWidth < 400 ? 11 : 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build appointment card widgets
+  Widget _buildAppointmentCard(
+      BuildContext context,
+      String patientName,
+      String time,
+      String purpose,
+      String status,
+      ) {
+    // Determine color based on patient status
+    Color statusColor;
+    switch (status) {
+      case 'Waiting':
+        statusColor = Colors.green;
+        break;
+      case 'In Consultation':
+        statusColor = Colors.orange;
+        break;
+      case 'Completed':
+        statusColor = Colors.purple;
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    // Card widget to display patient appointment information
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        // Patient avatar
+        leading: const CircleAvatar(
+          child: Icon(Icons.person),
+        ),
+        // Patient name
+        title: Text(patientName),
+        // Appointment details
+        subtitle: Text('$time - $purpose'),
+        // Status badge with appropriate color
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: statusColor.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            status,
+            style: TextStyle(color: statusColor),
+          ),
+        ),
+        // Tap handler for card (currently empty)
+        onTap: () {
+          // Navigate to patient details or appointment details
+        },
+      ),
+    );
+  }
+}

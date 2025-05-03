@@ -1,16 +1,34 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:management_cabinet_medical_mobile/pages/auth/forgot_password_page.dart';
+import 'package:management_cabinet_medical_mobile/pages/auth/inscription_page.dart';
+import 'package:management_cabinet_medical_mobile/pages/auth/login_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/navigation_bar.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/patients_page.dart';
+import 'package:management_cabinet_medical_mobile/providers/appointement_provider.dart';
+import 'package:management_cabinet_medical_mobile/providers/patient_provider_global.dart';
+import 'package:management_cabinet_medical_mobile/providers/patient_provider_waiting_room.dart';
+import 'package:management_cabinet_medical_mobile/providers/profile_provider.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => PatientProvider()),
+      ChangeNotifierProvider(create: (_) => PatientProviderGlobal()),
+      ChangeNotifierProvider(create: (_) => AppointmentProvider()),
+      ChangeNotifierProvider(create: (_) => ProfileProvider()),
+
+    ],
+    child: MyApp(),
+  ),);
 }
 
 class MyApp extends StatelessWidget {
@@ -25,11 +43,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const navigationBar(),
+      debugShowCheckedModeBanner: false,
+      home: FirebaseAuth.instance.currentUser == null ? MedicalLoginPage() : navigationBar(),
       routes: {
         '/patients': (context) => PatientsPage(),
         '/addPatient': (context) => AddPatientPage(),
         //'/editPatient': (context) => EditPatientPage()
+        'signup': (context) => MedicalSignUpPage(),
+        'login': (context) => MedicalLoginPage(),
+        'forgotPWD': (context) => ForgotPasswordPage(),
+        'navigationBar': (context) => navigationBar(),
       },
     );
   }

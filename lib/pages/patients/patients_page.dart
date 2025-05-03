@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/antecedents_page.dart';
+import 'package:provider/provider.dart';
+import '../../providers/patient_provider_global.dart';
+import '../../utils/floating_button.dart';
 import 'components/show_option_popup.dart';
 import 'components/show_patient_details.dart';
 
@@ -15,23 +18,29 @@ class PatientsPage extends StatefulWidget {
 class _PatientsPageState extends State<PatientsPage> {
   final TextEditingController searchController = TextEditingController(); // Controller for the search bar
   final FocusNode searchFocusNode = FocusNode(); // Focus node to manage the search bar focus state
-  List<QueryDocumentSnapshot> filteredData = []; // List to store filtered patient data
-  String searchQuery = ''; // The query string for search
+
 
   @override
   void initState() {
     super.initState();
+    // Fetch patients when the page loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PatientProviderGlobal>(context, listen: false).fetchPatients();
+    });
+
     // Listen to changes in the search text field
     searchController.addListener(() {
-      setState(() {
-        searchQuery = searchController.text; // Update search query on text change
-      });
+      Provider.of<PatientProviderGlobal>(context, listen: false)
+          .setSearchQuery(searchController.text);
     });
-    // Listen to changes in the search bar's focus state
+
+    // Listen to focus changes
     searchFocusNode.addListener(() {
       setState(() {});
     });
   }
+
+
 
   @override
   void dispose() {
@@ -40,25 +49,14 @@ class _PatientsPageState extends State<PatientsPage> {
     super.dispose();
   }
 
-  // Filters patient data based on the search query
-  List<QueryDocumentSnapshot> filterSearchResults(
-      List<QueryDocumentSnapshot> data) {
-    if (searchQuery.isEmpty)
-      return data; // Return all patients if the search query is empty
-    return data.where((patient) {
-      String name = patient['name'].toString().toLowerCase(); // Get the patient's name in lowercase
-      return name.startsWith(
-          searchQuery.toLowerCase()); // Check if the name starts with the search query
-    }).toList();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-            'Patients List', style: TextStyle(color: Colors.white)), // App bar title
-        backgroundColor: Colors.blueAccent.shade400, // App bar background color
+            'Patients List', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), // App bar title
+        backgroundColor: Color(0xFF2A79B0), // App bar background color
       ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(), // Dismiss the keyboard when tapping outside
@@ -77,6 +75,8 @@ class _PatientsPageState extends State<PatientsPage> {
                       onPressed: () {
                         searchFocusNode.unfocus(); // Unfocus the search field
                         searchController.clear(); // Clear the search text
+                        Provider.of<PatientProviderGlobal>(context, listen: false)
+                            .setSearchQuery('');
                       },
                     ),
                   Expanded(
@@ -92,6 +92,8 @@ class _PatientsPageState extends State<PatientsPage> {
                           icon: Icon(Icons.clear), // Clear icon
                           onPressed: () {
                             searchController.clear(); // Clear the search text
+                            Provider.of<PatientProviderGlobal>(context, listen: false)
+                                .setSearchQuery('');
                           },
                         )
                             : null,
@@ -110,44 +112,31 @@ class _PatientsPageState extends State<PatientsPage> {
 
             // Patient List Widget
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection("patients") // Fetch the patients collection from Firestore
-                    .orderBy("createdAt", descending: true) // Order patients by creation date (descending)
-                    .snapshots(), // Listen to real-time updates
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+              child: Consumer<PatientProviderGlobal>(
+                builder: (context, patientProvider, child) {
+                  if (patientProvider.isLoading) {
                     return Center(
-                        child: CircularProgressIndicator(
-                            color: Colors.blueAccent)); // Show loading indicator while waiting
-                  }
-                  if (snapshot.hasError) {
-                    return const Center(
-                      child: Text(
-                        'Error loading data',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ); // Display error message if something goes wrong
+                      child: CircularProgressIndicator(color: Color(0xFF2A79B0)),
+                    );
                   }
 
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  final patientsList = patientProvider.filteredPatients;
+
+                  if (patientsList.isEmpty) {
                     return const Center(
                       child: Text(
                         'No Patients',
                         style: TextStyle(fontSize: 18, color: Colors.grey),
                       ),
-                    ); // Show message if no patients are found
+                    );
                   }
-
-                  final data = snapshot.data!.docs; // Get the patient data from Firestore
-                  final filteredData = filterSearchResults(data); // Filter the data based on the search query
 
                   // Display a list of patients
                   return ListView.builder(
                     padding: const EdgeInsets.only(bottom: 80.0),
-                    itemCount: filteredData.length, // Number of patients to display
+                    itemCount: patientsList.length, // Number of patients to display
                     itemBuilder: (context, index) {
-                      var patientData = filteredData[index]; // Get patient data for this index
+                      final patient = patientsList[index]; // Get patient data for this index
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16.0, vertical: 6.0),
@@ -157,32 +146,52 @@ class _PatientsPageState extends State<PatientsPage> {
                           ),
                           child: ListTile(
                             leading: const Icon(
-                                Icons.person, color: Colors.blue), // Icon for the patient
+                                Icons.person, color: Color(0xFF2A79B0)), // Icon for the patient
                             title: Text(
-                              '${patientData['name']} ${patientData['prenom']}', // Patient's name
+                              '${patient.name} ${patient.prenom}', // Patient's name
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold), // Bold text for name
                             ),
                             subtitle: Text(
-                                'Assurance: ${patientData['assurance']
-                                    .isNotEmpty
-                                    ? patientData['assurance']
-                                    : 'N/A'} | Age: ${patientData['age']} '), // Patient's insurance and age
+                                'Assurance: ${patient.assurance != null && patient.assurance!.isNotEmpty
+                                    ? patient.assurance
+                                    : 'N/A'} | Age: ${patient.age} '), // Patient's insurance and age
                             trailing: IconButton(
-                              icon:
-                              const Icon(Icons.more_vert, color: Colors.blue), // More options icon
+                              icon: const Icon(Icons.more_vert, color: Color(0xFF2A79B0)),
                               onPressed: () {
-                                showPatientDetails(context, patientData); // Show patient details
+                                // Pass the patient data directly instead of fetching it again
+                                FirebaseFirestore.instance
+                                    .collection('patients')
+                                    .where(FieldPath.documentId, isEqualTo: patient.id)
+                                    .get()
+                                    .then((snapshot) {
+                                  if (snapshot.docs.isNotEmpty) {
+                                    showPatientDetails(context, snapshot.docs.first);
+                                  }
+                                });
                               },
                             ),
                             onLongPress: () {
-                              showOptionsPopup(context, patientData); // Show options popup on long press
+                              // Pass the patient data directly instead of fetching it again
+                              FirebaseFirestore.instance
+                                  .collection('patients')
+                                  .where(FieldPath.documentId, isEqualTo: patient.id)
+                                  .get()
+                                  .then((snapshot) {
+                                if (snapshot.docs.isNotEmpty) {
+                                  showOptionsPopup(
+                                      context,
+                                      snapshot.docs.first,
+                                          () => patientProvider?.fetchPatients()
+                                  );
+                                }
+                              });
                             },
                             onTap: (){
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => AntecedentsPage(patientId: patientData.id),
+                                  builder: (context) => AntecedentsPage(patientId: patient.id),
                                 ),
                               );
                             },
@@ -198,25 +207,17 @@ class _PatientsPageState extends State<PatientsPage> {
         ),
       ),
       // Floating action button to add a new patient
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(left: 31),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AddPatientPage()), // Navigate to the AddPatientPage
-                );
-              },
-              icon: const Icon(Icons.add), // Add icon
-              label: const Text('Add Patient'), // Label for the button
-              backgroundColor: Colors.blueAccent.shade400, // Background color
-              foregroundColor: Colors.white, // Text and icon color
-            ),
-          ],
-        ),
+      floatingActionButton:FloatingButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddPatientPage()), // Navigate to the AddPatientPage
+          );
+        },
+        label: 'Add Patient',
+        icon: Icons.add,
+        backgroundColor: Color(0xFF2A79B0),
+        foregroundColor: Colors.white,
       ),
     );
   }

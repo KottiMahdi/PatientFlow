@@ -1,5 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../models/patient_model.dart';
+import '../../providers/patient_provider_global.dart';
 
 class EditPatientPage extends StatefulWidget {
   final DocumentSnapshot patientData;
@@ -109,41 +113,55 @@ class _EditPatientPageState extends State<EditPatientPage> {
   updatePatient() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Update patient data in Firestore
-        await patients.doc(widget.patientData.id).update({
-          "name": nameController.text,
-          "prenom": prenomController.text,
-          "CIN": cinController.text,
-          "age": ageController.text,
-          "dateNaiss": dateOfBirthController.text,
-          "codePostal": codePostalController.text,
-          "numeroAssurance": numeroAssuranceController.text,
-          "genre": selectedGenre,
-          "etatCivil": selectedEtatCivil,
-          "nationalite": selectedNationalite,
-          "adresse": adresseController.text,
-          "ville": villeController.text,
-          "tel": telController.text,
-          "telWhatsApp": telWhatsAppController.text,
-          "email": emailController.text,
-          "Dernier RDV": dernierRdvController.text,
-          "Prochain RDV": prochainRdvController.text,
-          "groupSanguin": selectedGroupSanguin,
-          "assurant": selectedAssurant,
-          "assurance": selectedAssurance,
-          "relation": selectedRelation,
-          "profession": selectedProfession,
-          "pays": paysController.text,
-          "adressee": adresseParController.text,
-        });
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Patient updated successfully!")),
+        // Create Patient object with the original timestamp
+        Patient patient = Patient(
+          id: widget.patientData.id, // Use the existing ID for updates
+          name: nameController.text,
+          prenom: prenomController.text,
+          cin: cinController.text,
+          age: ageController.text,
+          dateNaiss: dateOfBirthController.text,
+          codePostal: codePostalController.text,
+          numeroAssurance: numeroAssuranceController.text,
+          genre: selectedGenre,
+          etatCivil: selectedEtatCivil,
+          nationalite: selectedNationalite,
+          adresse: adresseController.text,
+          ville: villeController.text,
+          tel: telController.text,
+          telWhatsApp: telWhatsAppController.text,
+          email: emailController.text,
+          dernierRdv: dernierRdvController.text,
+          prochainRdv: prochainRdvController.text,
+          groupSanguin: selectedGroupSanguin,
+          assurant: selectedAssurant,
+          assurance: selectedAssurance,
+          relation: selectedRelation,
+          profession: selectedProfession,
+          pays: paysController.text,
+          adressePar: adresseParController.text,
+          createdAt: DateTime.timestamp(), // Preserve the original creation date
         );
 
-        // Navigate back
-        Navigator.pop(context);
+        // Create a map without updating the createdAt field
+        Map<String, dynamic> updateData = patient.toMap();
+        // Remove the createdAt field to prevent it from being updated
+        updateData.remove('createdAt');
+
+        // Use provider to update patient
+        final success = await Provider.of<PatientProviderGlobal>(context, listen: false)
+            .updatePatient(widget.patientData.id, updateData);
+
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Patient updated successfully!")),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error updating patient")),
+          );
+        }
       } catch (e) {
         print("Error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -152,35 +170,12 @@ class _EditPatientPageState extends State<EditPatientPage> {
       }
     }
   }
-
 // Function to fetch dropdown options from Firestore for a specific document
 // - Retrieves a document from the "dropdown_options" collection
 // - Extracts all string values from the document and returns them as a list
-// - Handles errors gracefully and returns an empty list in case of failure
-  Future<List<String>> getDropdownOptions(String document) async {
-    try {
-      // Fetch the document from Firestore
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection("dropdown_options")
-          .doc(document)
-          .get();
-
-      if (!snapshot.exists) {
-        print("Document does not exist");
-        return [];
-      }
-
-      // Extract all fields from the document as a list of strings
-      final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-
-      // Safely convert fields to a list of strings, assuming the values are either String or List<String>
-      return data.values
-          .whereType<String>() // Filters out non-string values
-          .toList();
-    } catch (e) {
-      print("Error fetching $document options: $e");
-      return []; // Return an empty list on error
-    }
+  Future<List<String>> getDropdownOptions(String document) {
+    return Provider.of<PatientProviderGlobal>(context, listen: false)
+        .getDropdownOptions(document);
   }
 
   // Cache for dropdown data
@@ -213,7 +208,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text("Edit Patient", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blueAccent.shade400,
+        backgroundColor: Color(0xFF2A79B0),
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -231,7 +226,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
+                    color: Color(0xFF2A79B0),
                   ),
                 ),
                 SizedBox(height: 16.0),
@@ -336,7 +331,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
               },
               label: Text("Update"),
               icon: Icon(Icons.save),
-              backgroundColor: Colors.blueAccent.shade400,
+              backgroundColor: Color(0xFF2A79B0),
               foregroundColor: Colors.white,
             ),
           ],
@@ -360,7 +355,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
           return null;
         },
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.blueAccent),
+          prefixIcon: Icon(icon, color: Color(0xFF2A79B0)),
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey.shade600),
           filled: true,
@@ -453,7 +448,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
               labelText: label,
 
               // Icon displayed inside the input field
-              prefixIcon: Icon(icon, color: Colors.blueAccent),
+              prefixIcon: Icon(icon, color: Color(0xFF2A79B0)),
 
               // Background color and padding for the input field
               filled: true,
@@ -474,7 +469,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
             isExpanded: true, // Expands dropdown to fit content width
             dropdownColor: Colors.white, // Background color of the dropdown
             icon: Icon(Icons.arrow_drop_down,
-                color: Colors.blueAccent), // Updated dropdown icon,
+                color: Color(0xFF2A79B0)), // Updated dropdown icon,
             iconSize: 30, // Size of the dropdown icon
             elevation: 8, // Shadow depth for the dropdown
             style: TextStyle(

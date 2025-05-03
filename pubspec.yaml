@@ -40,6 +40,10 @@ dependencies:
   firebase_auth: ^5.3.1
   table_calendar: ^3.0.6
   intl: ^0.20.1
+  provider: ^6.1.2
+  awesome_dialog: ^3.2.1
+  google_sign_in: ^5.0.0
+
 
 dev_dependencies:
   flutter_test:
@@ -95,11 +99,11 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 flutter_launcher_icons:
-  image_path: "assets/images/icon3.png"
+  image_path: "assets/images/healthy.png"
 
   android: true
   ios: true
-  image_path_android: "assets/images/icon3.png"
+  image_path_android: "assets/images/healthy.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/images/icon3.png"
+  adaptive_icon_foreground: "assets/images/healthy.png"

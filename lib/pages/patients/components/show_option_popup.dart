@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/edit_patient_page.dart';
-import '../delete_patient_page.dart'; // Import the delete patient page functionality
+import '../delete_patient_page.dart';
+import '../schedule_appointment_patient.dart';
 
-// Function to Show a Popup with Options (Edit or Delete) for a Patient
-void showOptionsPopup(BuildContext context, QueryDocumentSnapshot patientData) {
-  // Explicitly cast the data from Firestore to a map for easy access
+void showOptionsPopup(BuildContext context, QueryDocumentSnapshot patientData,
+    VoidCallback fetchPatientsData) {
   final Map<String, dynamic> data = patientData.data() as Map<String, dynamic>;
 
   showDialog(
@@ -13,11 +13,11 @@ void showOptionsPopup(BuildContext context, QueryDocumentSnapshot patientData) {
     builder: (BuildContext context) {
       return AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0), // Rounded corners for the dialog
+          borderRadius: BorderRadius.circular(16.0),
         ),
         title: Center(
           child: Text(
-            '${data['name']} ${data['prenom']}', // Patient's full name
+            '${data['name']} ${data['prenom']}',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -25,53 +25,93 @@ void showOptionsPopup(BuildContext context, QueryDocumentSnapshot patientData) {
           ),
         ),
         content: Column(
-          mainAxisSize: MainAxisSize.min, // Minimize the height of the dialog based on its content
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 12), // Space between name and buttons
+            const SizedBox(height: 12),
 
-            // Row with Edit and Delete Buttons
+            // Edit/Delete Buttons Row
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround, // Space evenly around buttons
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 // Edit Button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context); // Close the dialog
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditPatientPage(patientData: patientData),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EditPatientPage(patientData: patientData),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.edit, size: 20),
+                      label: const Text('Edit', style: TextStyle(fontSize: 14)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF2A79B0),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size(0, 48),
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit), // Edit icon
-                  label: const Text('Edit'), // Button label
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent, // Blue background for the button
-                    foregroundColor: Colors.white, // White text and icon
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0), // Rounded corners
                     ),
                   ),
                 ),
 
                 // Delete Button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context); // Close the dialog
-                    deletePatient(context, patientData); // Call the delete function with the patient snapshot
-                  },
-                  icon: const Icon(Icons.delete), // Delete icon
-                  label: const Text('Delete'), // Button label
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent, // Red background for the button
-                    foregroundColor: Colors.white, // White text and icon
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        deletePatient(context, patientData);
+                      },
+                      icon: const Icon(Icons.delete, size: 20),
+                      label:
+                          const Text('Delete', style: TextStyle(fontSize: 14)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        minimumSize: const Size(0, 48),
+                      ),
                     ),
                   ),
                 ),
               ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // Schedule Appointment Button
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                schedulePatientAppointment(
+                    context, patientData, fetchPatientsData);
+              },
+              icon: const Icon(Icons.calendar_today, size: 20),
+              label: const Text('Schedule Appointment',
+                  style: TextStyle(fontSize: 14)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.tealAccent[700],
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                minimumSize: const Size(double.infinity, 48),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
             ),
           ],
         ),
