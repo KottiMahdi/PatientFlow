@@ -35,13 +35,13 @@ class _AppointmentPageState extends State<AppointmentPage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: Color(0xFF2A79B0),
+              primary: const Color(0xFF1E3A8A),
               onPrimary: Colors.white,
-              onSurface: Color(0xFF2A79B0),
+              onSurface: const Color(0xFF1E3A8A),
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: Color(0xFF2A79B0),
+                foregroundColor: const Color(0xFF1E3A8A),
               ),
             ),
           ),
@@ -58,6 +58,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Consumer<AppointmentProvider>(
       builder: (context, appointmentProvider, child) {
         return Scaffold(
@@ -86,13 +87,20 @@ class _AppointmentPageState extends State<AppointmentPage> {
                 ),
               ],
             ),
-            backgroundColor: Color(0xFF2A79B0),
+            backgroundColor: const Color(0xFF1E3A8A),
             actions: [
               // Calendar icon to open date picker
-              IconButton(
-                icon: Icon(Icons.calendar_today, color: Colors.white),
-                onPressed: () => _selectDate(context),
-                tooltip: 'Select Date',
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.calendar_today, color: Colors.white),
+                  onPressed: () => _selectDate(context),
+                  tooltip: 'Select Date',
+                ),
               ),
               // Clear button to reset date to today (only shown when date is manually selected)
               if (appointmentProvider.isManualDateSelection)
@@ -110,7 +118,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
               // Pull-to-refresh functionality
               child: RefreshIndicator(
                 onRefresh: () => appointmentProvider.fetchData(),
-                color: Color(0xFF2A79B0),
+                color: const Color(0xFF1E3A8A),
                 // Conditional UI based on appointment data availability
                 child: appointmentProvider.appointmentList.isEmpty
                     ? Center(
@@ -150,14 +158,14 @@ class _AppointmentPageState extends State<AppointmentPage> {
                         icon: Icon(Icons.add),
                         label: Text('Add Appointment'),
                         style: TextButton.styleFrom(
-                          foregroundColor: Color(0xFF2A79B0),
+                          foregroundColor: const Color(0xFF1E3A8A),
                         ),
                       ),
                     ],
                   )
                       : CircularProgressIndicator(
                     // Loading indicator while fetching data
-                    color: Color(0xFF2A79B0),
+                    color: const Color(0xFF1E3A8A),
                   ),
                 )
                     : ListView.builder(
@@ -205,7 +213,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
                                     Icon(
                                       Icons.access_time,
                                       size: 20,
-                                      color: Color(0xFF2A79B0),
+                                      color: const Color(0xFF1E3A8A),
                                     ),
                                     SizedBox(width: 8),
                                     Text(
@@ -213,7 +221,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFF2A79B0),
+                                        color: const Color(0xFF1E3A8A),
                                       ),
                                     ),
                                   ],
@@ -231,7 +239,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
                                       children: [
                                         // Patient avatar with initial
                                         CircleAvatar(
-                                          backgroundColor: Color(0xFF2A79B0)
+                                          backgroundColor: const Color(0xFF1E3A8A)
                                               .withOpacity(0.2),
                                           radius: 24,
                                           child: Text(
@@ -242,7 +250,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
                                               color:
-                                              Color(0xFF2A79B0),
+                                              const Color(0xFF1E3A8A),
                                             ),
                                           ),
                                         ),
@@ -331,7 +339,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
             },
             label: 'Schedule Appointment',
             icon: Icons.calendar_today,
-            backgroundColor: Color(0xFF2A79B0),
+            backgroundColor: const Color(0xFF1E3A8A),
             foregroundColor: Colors.white,
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

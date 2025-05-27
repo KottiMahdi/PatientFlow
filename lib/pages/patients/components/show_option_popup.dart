@@ -51,7 +51,7 @@ void showOptionsPopup(BuildContext context, QueryDocumentSnapshot patientData,
                       icon: const Icon(Icons.edit, size: 20),
                       label: const Text('Edit', style: TextStyle(fontSize: 14)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF2A79B0),
+                        backgroundColor: const Color(0xFF1E3A8A),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0),

@@ -56,7 +56,7 @@ class _PatientsPageState extends State<PatientsPage> {
       appBar: AppBar(
         title: const Text(
             'Patients List', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), // App bar title
-        backgroundColor: Color(0xFF2A79B0), // App bar background color
+        backgroundColor: const Color(0xFF1E3A8A), // App bar background color
       ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(), // Dismiss the keyboard when tapping outside
@@ -146,7 +146,7 @@ class _PatientsPageState extends State<PatientsPage> {
                           ),
                           child: ListTile(
                             leading: const Icon(
-                                Icons.person, color: Color(0xFF2A79B0)), // Icon for the patient
+                                Icons.person,  color: Color(0xFF1E3A8A)), // Icon for the patient
                             title: Text(
                               '${patient.name} ${patient.prenom}', // Patient's name
                               style: const TextStyle(
@@ -157,7 +157,7 @@ class _PatientsPageState extends State<PatientsPage> {
                                     ? patient.assurance
                                     : 'N/A'} | Age: ${patient.age} '), // Patient's insurance and age
                             trailing: IconButton(
-                              icon: const Icon(Icons.more_vert, color: Color(0xFF2A79B0)),
+                              icon: const Icon(Icons.more_vert, color: const Color(0xFF1E3A8A)),
                               onPressed: () {
                                 // Pass the patient data directly instead of fetching it again
                                 FirebaseFirestore.instance
@@ -216,7 +216,7 @@ class _PatientsPageState extends State<PatientsPage> {
         },
         label: 'Add Patient',
         icon: Icons.add,
-        backgroundColor: Color(0xFF2A79B0),
+        backgroundColor: const Color(0xFF1E3A8A),
         foregroundColor: Colors.white,
       ),
     );

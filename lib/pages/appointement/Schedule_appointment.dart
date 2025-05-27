@@ -102,7 +102,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
           "Schedule New Appointment",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
-        backgroundColor: Color(0xFF2A79B0),
+        backgroundColor: const Color(0xFF1E3A8A),
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -117,7 +117,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2A79B0),
+                  color: const Color(0xFF1E3A8A),
                 ),
               ),
               SizedBox(height: 16),
@@ -130,7 +130,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  prefixIcon: Icon(Icons.person, color: Color(0xFF2A79B0)),
+                  prefixIcon: Icon(Icons.person, color: const Color(0xFF1E3A8A)),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -146,7 +146,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2A79B0),
+                  color: const Color(0xFF1E3A8A),
                 ),
               ),
               SizedBox(height: 16),
@@ -161,7 +161,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  prefixIcon: Icon(Icons.notes, color: Color(0xFF2A79B0)),
+                  prefixIcon: Icon(Icons.notes, color: const Color(0xFF1E3A8A)),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -177,7 +177,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2A79B0),
+                  color: const Color(0xFF1E3A8A),
                 ),
               ),
               SizedBox(height: 16),
@@ -207,7 +207,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.calendar_today, color: Color(0xFF2A79B0)),
+                              Icon(Icons.calendar_today, color: const Color(0xFF1E3A8A)),
                               SizedBox(width: 16),
                               Text(
                                 selectedDate == null
@@ -261,7 +261,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.access_time, color: Color(0xFF2A79B0)),
+                              Icon(Icons.access_time, color: const Color(0xFF1E3A8A)),
                               SizedBox(width: 16),
                               Text(
                                 selectedTime == null ? 'Select Time' : 'Time: ${selectedTime!.format(context)}',
@@ -301,7 +301,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                         child: Text("Cancel"),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Color(0xFF2A79B0)),
+                        side: BorderSide(color: const Color(0xFF1E3A8A)),
                       ),
                     ),
                   ),
@@ -314,7 +314,7 @@ class _AppointmentSchedulerPageState extends State<AppointmentSchedulerPage> {
                         child: Text("Schedule"),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF2A79B0),
+                        backgroundColor: const Color(0xFF1E3A8A),
                         foregroundColor: Colors.white,
                       ),
                     ),

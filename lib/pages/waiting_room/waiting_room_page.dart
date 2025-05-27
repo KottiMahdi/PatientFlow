@@ -59,11 +59,19 @@ class WaitingRoomMainPageState extends State<WaitingRoomMainPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: Color(0xFF2A79B0),
-        title: Row(
+        backgroundColor: const Color(0xFF1E3A8A),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Flexible(
-              child: Text(
+            Text(
+              'Track Patient',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 18,
+              ),
+            ),
+              Text(
                 DateFormat('EEEE, d MMMM yyyy').format(patientProvider.selectedDate),
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
@@ -72,7 +80,6 @@ class WaitingRoomMainPageState extends State<WaitingRoomMainPage> {
                   letterSpacing: 0.5,
                 ),
               ),
-            ),
           ],
         ),
         actions: [
@@ -95,13 +102,13 @@ class WaitingRoomMainPageState extends State<WaitingRoomMainPage> {
                     return Theme(
                       data: Theme.of(context).copyWith(
                         colorScheme: ColorScheme.light(
-                          primary: Color(0xFF2A79B0),
+                          primary: const Color(0xFF1E3A8A),
                           onPrimary: Colors.white,
-                          onSurface: Color(0xFF2A79B0),
+                          onSurface: const Color(0xFF1E3A8A),
                         ),
                         textButtonTheme: TextButtonThemeData(
                           style: TextButton.styleFrom(
-                            foregroundColor: Color(0xFF2A79B0),
+                            foregroundColor: const Color(0xFF1E3A8A),
                           ),
                         ),
                       ),

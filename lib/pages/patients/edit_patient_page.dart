@@ -208,7 +208,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text("Edit Patient", style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF2A79B0),
+        backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -226,7 +226,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2A79B0),
+                    color: const Color(0xFF1E3A8A),
                   ),
                 ),
                 SizedBox(height: 16.0),
@@ -331,7 +331,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
               },
               label: Text("Update"),
               icon: Icon(Icons.save),
-              backgroundColor: Color(0xFF2A79B0),
+              backgroundColor: const Color(0xFF1E3A8A),
               foregroundColor: Colors.white,
             ),
           ],
@@ -355,7 +355,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
           return null;
         },
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Color(0xFF2A79B0)),
+          prefixIcon: Icon(icon, color: const Color(0xFF1E3A8A)),
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey.shade600),
           filled: true,
@@ -448,7 +448,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
               labelText: label,
 
               // Icon displayed inside the input field
-              prefixIcon: Icon(icon, color: Color(0xFF2A79B0)),
+              prefixIcon: Icon(icon, color: const Color(0xFF1E3A8A)),
 
               // Background color and padding for the input field
               filled: true,
@@ -469,7 +469,7 @@ class _EditPatientPageState extends State<EditPatientPage> {
             isExpanded: true, // Expands dropdown to fit content width
             dropdownColor: Colors.white, // Background color of the dropdown
             icon: Icon(Icons.arrow_drop_down,
-                color: Color(0xFF2A79B0)), // Updated dropdown icon,
+                color: const Color(0xFF1E3A8A)), // Updated dropdown icon,
             iconSize: 30, // Size of the dropdown icon
             elevation: 8, // Shadow depth for the dropdown
             style: TextStyle(

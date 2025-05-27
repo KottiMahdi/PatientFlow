@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/patient_model.dart';
@@ -39,6 +40,7 @@ class PatientProviderGlobal extends ChangeNotifier {
     try {
       final snapshot = await _firestore
           .collection('patients')
+          .where('id', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
           .orderBy('createdAt', descending: true)
           .get();
 
@@ -63,6 +65,9 @@ class PatientProviderGlobal extends ChangeNotifier {
     try {
       // Add timestamp
       patientData['createdAt'] = FieldValue.serverTimestamp();
+
+      // Add user ID
+      patientData['id'] = FirebaseAuth.instance.currentUser!.uid;
 
       // Add to Firestore
       DocumentReference docRef = await _firestore.collection('patients').add(patientData);

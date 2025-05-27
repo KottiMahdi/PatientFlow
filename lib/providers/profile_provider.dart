@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../utils/build_dopdown_field.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ProfileState {
   final TextEditingController nameController;
@@ -60,7 +60,8 @@ class ProfileState {
       isLoading: isLoading ?? this.isLoading,
       profileImage: profileImage ?? this.profileImage,
       originalValues: originalValues ?? this.originalValues,
-      selectedSpecialization: selectedSpecialization ?? this.selectedSpecialization,
+      selectedSpecialization:
+      selectedSpecialization ?? this.selectedSpecialization,
       dropdownCache: dropdownCache ?? this.dropdownCache,
     );
   }
@@ -145,7 +146,6 @@ class ProfileProvider extends ChangeNotifier {
   }
 
   // Get dropdown options
-// Update in ProfileProvider class
   Future<List<String>> getDropdownOptions(String document) async {
     try {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
@@ -153,22 +153,19 @@ class ProfileProvider extends ChangeNotifier {
           .doc(document)
           .get();
 
-      if (!snapshot.exists) return [];
-
-      final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-
-      // Check for 'options' array field
-      if (data.containsKey('options') && data['options'] is List) {
-        return List<String>.from(data['options']);
+      if (!snapshot.exists) {
+        return [];
       }
 
-      return []; // Fallback if structure is incorrect
+      final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      return data.values.whereType<String>().toList();
     } catch (e) {
       print("Error fetching $document options: $e");
       return [];
     }
   }
 
+// Update loadUserData to handle profile image
   Future<void> loadUserData(BuildContext context) async {
     _state = _state.copyWith(isLoading: true);
     notifyListeners();
@@ -197,14 +194,23 @@ class ProfileProvider extends ChangeNotifier {
           String specialization = userData['specialization'] ?? '';
           _state = _state.copyWith(selectedSpecialization: specialization);
           bioController.text = userData['bio'] ?? '';
+
+          // Handle profile image if it exists
+          if (userData['profileImageUrl'] != null) {
+            try {
+
+            } catch (e) {
+              print('Error downloading profile image: $e');
+            }
+          }
         }
       }
     } catch (e) {
       print('Error loading user data: $e');
       // Show error message to user
-      if(context.mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Failed to load profile data. Please try again.'),
             backgroundColor: Colors.red,
           ),
@@ -274,10 +280,12 @@ class ProfileProvider extends ChangeNotifier {
     nameController.text = originalValues['name'] ?? '';
     emailController.text = originalValues['email'] ?? '';
     phoneController.text = originalValues['phone'] ?? '';
-    _state = _state.copyWith(selectedSpecialization: originalValues['specialization']);
+    _state = _state.copyWith(
+        selectedSpecialization: originalValues['specialization']);
     bioController.text = originalValues['bio'] ?? '';
   }
 
+// Updated saveChanges method to handle image upload
   Future<void> saveChanges(BuildContext context) async {
     if (!_state.hasChanges) return;
 
@@ -289,21 +297,42 @@ class ProfileProvider extends ChangeNotifier {
       User? currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser != null) {
-
-        // Print debug info
-        print('Saving specialization: $_state.selectedSpecialization');
-
-        // Update user data in Firestore
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid)
-            .update({
+        // Create a data map for Firestore update
+        Map<String, dynamic> updateData = {
           'fullName': nameController.text,
           'phone': phoneController.text,
           'specialization': selectedSpecialization,
           'bio': bioController.text,
           'updatedAt': FieldValue.serverTimestamp(),
-        });
+        };
+
+        // Upload profile image if changed
+        if (_state.profileImage != null) {
+          // Create storage reference
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('profile_images')
+              .child('${currentUser.uid}.jpg');
+
+          // Upload the file
+          final uploadTask = storageRef.putFile(
+            _state.profileImage!,
+            SettableMetadata(contentType: 'image/jpeg'),
+          );
+
+          // Wait for upload to complete and get download URL
+          final snapshot = await uploadTask;
+          final downloadUrl = await snapshot.ref.getDownloadURL();
+
+          // Add image URL to update data
+          updateData['profileImageUrl'] = downloadUrl;
+        }
+
+        // Update user data in Firestore
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .update(updateData);
 
         // Update original values after successful save
         _storeOriginalValues();
@@ -311,7 +340,7 @@ class ProfileProvider extends ChangeNotifier {
         // Show success message
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Profile updated successfully'),
               backgroundColor: Colors.green,
             ),
@@ -322,7 +351,7 @@ class ProfileProvider extends ChangeNotifier {
       print('Error saving profile changes: $e');
 
       // Show error message
-      if(context.mounted){
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to update profile. Please try again.'),
@@ -357,7 +386,6 @@ class ProfileProvider extends ChangeNotifier {
         Navigator.of(context)
             .pushNamedAndRemoveUntil("login", (route) => false);
       }
-
     } catch (e) {
       if (context.mounted) {
         // Safety check
@@ -383,6 +411,45 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteAccount(BuildContext context) async {
+    try {
+      // Set loading state - FIXED: Update state using copyWith
+      _state = _state.copyWith(isSaving: true);
+      notifyListeners();
+
+      // Get current user
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Delete user data from Firestore
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .delete();
+
+        // Delete user authentication account
+        await user.delete();
+
+        // Sign out
+        await FirebaseAuth.instance.signOut();
+
+        // Navigate to login screen
+        Navigator.of(context).pushNamedAndRemoveUntil('login', (route) => false);
+      }
+    } catch (e) {
+      // Handle errors - FIXED: Update state using copyWith
+      _state = _state.copyWith(isSaving: false);
+      notifyListeners();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting account: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   bool validateEmail(String email) {
     return RegExp(
         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
@@ -396,10 +463,11 @@ class ProfileProvider extends ChangeNotifier {
   bool get isFormValid {
     bool isEmailValid = validateEmail(emailController.text);
     bool isPhoneValid = validatePhone(phoneController.text);
-    return isEmailValid && isPhoneValid && nameController.text.isNotEmpty && selectedSpecialization != null;
+    return isEmailValid &&
+        isPhoneValid &&
+        nameController.text.isNotEmpty &&
+        selectedSpecialization != null;
   }
-
-
 
   @override
   void dispose() {

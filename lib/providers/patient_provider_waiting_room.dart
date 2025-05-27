@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -94,6 +95,7 @@ class PatientProvider with ChangeNotifier {
   void fetchPatients() {
     FirebaseFirestore.instance
         .collection('waiting_room')
+        .where('id', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
         .orderBy('time')
         .snapshots()
         .listen((snapshot) {

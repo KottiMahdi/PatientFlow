@@ -18,7 +18,7 @@ Widget buildTextField(
         return null;
       },
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Color(0xFF2A79B0)),
+        prefixIcon: Icon(icon, color: const Color(0xFF1E3A8A)),
         labelText: label,
         labelStyle: TextStyle(color: Colors.grey.shade600),
         filled: true,

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:management_cabinet_medical_mobile/pages/appointement/appointement_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/auth/forgot_password_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/auth/inscription_page.dart';
 import 'package:management_cabinet_medical_mobile/pages/auth/login_page.dart';
@@ -16,21 +17,28 @@ import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  try {
+    // Try to initialize with a specific name
+    await Firebase.initializeApp(
+      name: 'MedicalCabinetApp',
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // If that fails, get the existing instance
+    Firebase.app('MedicalCabinetApp');
+  }
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => PatientProvider()),
       ChangeNotifierProvider(create: (_) => PatientProviderGlobal()),
       ChangeNotifierProvider(create: (_) => AppointmentProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
-
     ],
     child: MyApp(),
-  ),);
+  ));
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -53,6 +61,7 @@ class MyApp extends StatelessWidget {
         'login': (context) => MedicalLoginPage(),
         'forgotPWD': (context) => ForgotPasswordPage(),
         'navigationBar': (context) => navigationBar(),
+        'appointment' : (context) => AppointmentPage()
       },
     );
   }

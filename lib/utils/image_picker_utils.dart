@@ -1,12 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 
 class ImagePickerUtils {
+  static final ImagePicker _picker = ImagePicker();
+
   static void showImagePickerBottomSheet(BuildContext context) {
     final provider = Provider.of<ProfileProvider>(context, listen: false);
+    final theme = Theme.of(context);
 
-    // This would use image_picker in a real app
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -28,27 +32,25 @@ class ImagePickerUtils {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Colors.blue,
-                child: Icon(Icons.camera_alt, color: Colors.white),
+              leading: CircleAvatar(
+                backgroundColor: theme.primaryColor.withOpacity(0.8),
+                child: const Icon(Icons.camera_alt, color: Colors.white),
               ),
               title: const Text('Take a photo'),
               onTap: () {
                 Navigator.pop(context);
-                // In a real app, this would call a method to take a photo
-                // provider.setProfileImage(File(...));
+                _pickImage(context, ImageSource.camera);
               },
             ),
             ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Colors.green,
-                child: Icon(Icons.photo_library, color: Colors.white),
+              leading: CircleAvatar(
+                backgroundColor: Colors.green.withOpacity(0.8),
+                child: const Icon(Icons.photo_library, color: Colors.white),
               ),
               title: const Text('Choose from gallery'),
               onTap: () {
                 Navigator.pop(context);
-                // In a real app, this would call a method to select a photo
-                // provider.setProfileImage(File(...));
+                _pickImage(context, ImageSource.gallery);
               },
             ),
             Padding(
@@ -77,5 +79,33 @@ class ImagePickerUtils {
         ),
       ),
     );
+  }
+
+  static Future<void> _pickImage(BuildContext context, ImageSource source) async {
+    try {
+      final provider = Provider.of<ProfileProvider>(context, listen: false);
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        provider.setProfileImage(File(pickedFile.path));
+        // If you want to auto-save the image upon selection, you can call
+        // provider.saveChanges(context); here
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting image: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      print('Error picking image: $e');
+    }
   }
 }

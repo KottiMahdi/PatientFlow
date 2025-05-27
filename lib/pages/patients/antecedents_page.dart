@@ -92,7 +92,7 @@ class _AntecedentsPageState extends State<AntecedentsPage> {
       return Scaffold(
         appBar: AppBar(
           title: Text('Loading...', style: TextStyle(color: Colors.white)),
-          backgroundColor: Color(0xFF2A79B0),
+          backgroundColor: const Color(0xFF1E3A8A),
           elevation: 0,
           iconTheme: IconThemeData(color: Colors.white),
         ),
@@ -106,7 +106,7 @@ class _AntecedentsPageState extends State<AntecedentsPage> {
       appBar: AppBar(
         title: Text('${patientData['name']} ${patientData['prenom']}',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Color(0xFF2A79B0),
+        backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
       ),

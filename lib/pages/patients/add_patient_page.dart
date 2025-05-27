@@ -23,7 +23,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
   final TextEditingController ageController = TextEditingController();
   final TextEditingController codePostalController = TextEditingController();
   final TextEditingController numeroAssuranceController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController dateOfBirthController = TextEditingController();
 
   // Additional controllers
@@ -38,7 +38,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
   final TextEditingController adresseParController = TextEditingController();
 
   CollectionReference patients =
-  FirebaseFirestore.instance.collection("patients");
+      FirebaseFirestore.instance.collection("patients");
 
   // Dropdown selected values
   String? selectedAssurance;
@@ -99,23 +99,33 @@ class _AddPatientPageState extends State<AddPatientPage> {
         );
 
         // Use the provider to add the patient
-        final success = await Provider.of<PatientProviderGlobal>(context, listen: false)
-            .addPatient(patient.toMap());
+        final success =
+            await Provider.of<PatientProviderGlobal>(context, listen: false)
+                .addPatient(patient.toMap());
 
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Patient added successfully!")),
+            SnackBar(
+              content: Text("Patient added successfully!"),
+              backgroundColor: Colors.green,
+            ),
           );
           Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error adding patient")),
+            SnackBar(
+              content: Text("Error adding patient"),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       } catch (e) {
         print("Error: $e");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error adding patient: $e")),
+          SnackBar(
+            content: Text("Error adding patient: $e"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -172,7 +182,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
       appBar: AppBar(
         title: Text("Add Patient",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Color(0xFF2A79B0),
+        backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
         iconTheme: IconThemeData(
             color: Colors.white), // Change the back icon color to white
@@ -193,7 +203,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2A79B0),
+                      color: const Color(0xFF1E3A8A),
                     ),
                   ),
                   SizedBox(height: 16.0),
@@ -227,7 +237,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       "genre",
                       selectedGenre,
                       Icons.transgender,
-                          (value) => setState(() => selectedGenre = value),
+                      (value) => setState(() => selectedGenre = value),
                       dropdownCache,
                       getDropdownOptions),
                   buildDropdownField(
@@ -236,7 +246,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       "etatCivil",
                       selectedEtatCivil,
                       Icons.person,
-                          (value) => setState(() => selectedEtatCivil = value),
+                      (value) => setState(() => selectedEtatCivil = value),
                       dropdownCache,
                       getDropdownOptions),
                   buildDropdownField(
@@ -245,7 +255,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       "nationalite",
                       selectedNationalite,
                       Icons.flag,
-                          (value) => setState(() => selectedNationalite = value),
+                      (value) => setState(() => selectedNationalite = value),
                       dropdownCache,
                       getDropdownOptions),
                   buildTextField(context, "Adresse", adresseController,
@@ -268,7 +278,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       "groupSanguin",
                       selectedGroupSanguin,
                       Icons.water_drop,
-                          (value) => setState(() => selectedGroupSanguin = value),
+                      (value) => setState(() => selectedGroupSanguin = value),
                       dropdownCache,
                       getDropdownOptions),
                   buildDropdownField(
@@ -277,7 +287,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       "assurant",
                       selectedAssurant,
                       Icons.verified_user,
-                          (value) => setState(() => selectedAssurant = value),
+                      (value) => setState(() => selectedAssurant = value),
                       dropdownCache,
                       getDropdownOptions),
                   buildDropdownField(
@@ -286,7 +296,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       "assurance",
                       selectedAssurance,
                       Icons.shield,
-                          (value) => setState(() => selectedAssurance = value),
+                      (value) => setState(() => selectedAssurance = value),
                       dropdownCache,
                       getDropdownOptions),
                   buildDropdownField(
@@ -295,7 +305,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       "relation",
                       selectedRelation,
                       Icons.group,
-                          (value) => setState(() => selectedRelation = value),
+                      (value) => setState(() => selectedRelation = value),
                       dropdownCache,
                       getDropdownOptions),
                   buildDropdownField(
@@ -304,7 +314,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       "profession",
                       selectedProfession,
                       Icons.work,
-                          (value) => setState(() => selectedProfession = value),
+                      (value) => setState(() => selectedProfession = value),
                       dropdownCache,
                       getDropdownOptions),
                   buildTextField(context, "Pays", paysController, Icons.public,
@@ -331,7 +341,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
               },
               label: Text("Save"),
               icon: Icon(Icons.save),
-              backgroundColor: Color(0xFF2A79B0),
+              backgroundColor: const Color(0xFF1E3A8A),
               foregroundColor: Colors.white,
             ),
           ],

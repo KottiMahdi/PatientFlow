@@ -53,7 +53,7 @@ class _NavigationBarState extends State<navigationBar> {
               .fixed, // Keeps items in place without shifting
           currentIndex: _currentIndex, // Sets the current selected index
           unselectedItemColor: Colors.grey, // Color for unselected icons
-          selectedItemColor: Color(0xFF2A79B0), // Color for selected icon
+          selectedItemColor: const Color(0xFF1E3A8A), // Color for selected icon
           selectedLabelStyle: TextStyle(
             fontWeight: FontWeight.bold, // Bold label for selected tab
             fontSize: fontSize, // Set font size for selected label

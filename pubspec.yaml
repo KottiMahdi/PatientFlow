@@ -42,8 +42,9 @@ dependencies:
   intl: ^0.20.1
   provider: ^6.1.2
   awesome_dialog: ^3.2.1
-  google_sign_in: ^5.0.0
-
+  google_sign_in: ^6.2.1
+  image_picker: ^1.1.2
+  firebase_storage: ^12.4.5
 
 dev_dependencies:
   flutter_test:
@@ -99,11 +100,11 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 flutter_launcher_icons:
-  image_path: "assets/images/healthy.png"
+  image_path: "assets/images/ssd.png"
 
   android: true
   ios: true
-  image_path_android: "assets/images/healthy.png"
+  image_path_android: "assets/images/ssd.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/images/healthy.png"
+  adaptive_icon_foreground: "assets/images/ssd.png"

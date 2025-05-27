@@ -29,7 +29,7 @@ class AppointmentActionButtons extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => EditAppointmentPage(
-                  documentId: appointment['id'],
+                  documentId: appointment['documentId'],
                   appointmentData: appointment,
                   onAppointmentUpdated: () => fetchData(),
                 ),
@@ -42,10 +42,15 @@ class AppointmentActionButtons extends StatelessWidget {
         const SizedBox(width: 20),
         // Delete button
         ElevatedButton(
-          onPressed: () => AppointmentDeleteHandler.showDeleteConfirmation(
-            context: context,
-            appointmentId: appointment['id'],
-          ),
+          onPressed: () {
+            print(
+                "Deleting appointment with documentId: ${appointment['documentId']}");
+            AppointmentDeleteHandler.showDeleteConfirmation(
+              context: context,
+              appointmentId:
+                  appointment['documentId'], // Use this, not appointment['id']
+            );
+          },
           style: ButtonStyles.elevatedButtonStyle(Colors.red),
           child: const Text("Delete", style: ButtonStyles.buttonTextStyle),
         ),

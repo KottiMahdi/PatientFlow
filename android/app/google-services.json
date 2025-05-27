@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "672257444728",
     "project_id": "cabinetmedicalmobileappx",
-    "storage_bucket": "cabinetmedicalmobileappx.appspot.com"
+    "storage_bucket": "cabinetmedicalmobileappx.firebasestorage.app"
   },
   "client": [
     {
@@ -12,7 +12,20 @@
           "package_name": "com.example.management_cabinet_medical_mobile"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "672257444728-amt6uiihuqv8c203dema8g4nnenbimch.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.management_cabinet_medical_mobile",
+            "certificate_hash": "05627741031e99f8233d92bf11a2d01e4004b9ee"
+          }
+        },
+        {
+          "client_id": "672257444728-unpi257c1rr6lerrvds48c6lk10dal1d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAPoLuGPprFr-emFSmJP0vsqY55yM2iMyo"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "672257444728-unpi257c1rr6lerrvds48c6lk10dal1d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../providers/profile_provider.dart';
 
 class LogoutDialogUtils {
   static void showLogoutDialog(BuildContext context) {
     final provider = Provider.of<ProfileProvider>(context, listen: false);
+    final GoogleSignIn _googleSignIn = GoogleSignIn();
 
     // Show confirmation dialog before logging out
     showDialog(
@@ -24,12 +26,18 @@ class LogoutDialogUtils {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
+
+              // Sign out from Google account and disconnect to clear the account selection
+              GoogleSignIn googleSignIn = GoogleSignIn();
+              googleSignIn.disconnect();
+
+              // Continue with your regular logout process
               provider.logout(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF2A79B0),
+              backgroundColor: Colors.red[700],
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(

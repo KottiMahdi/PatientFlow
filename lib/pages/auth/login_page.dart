@@ -1,6 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'google_auth_service.dart';
 
 class MedicalLoginPage extends StatefulWidget {
   const MedicalLoginPage({Key? key}) : super(key: key);
@@ -16,12 +18,92 @@ class _MedicalLoginPageState extends State<MedicalLoginPage> {
   bool _obscureText = true;
   bool _rememberMe = false;
 
+  // Add the Google Auth Service
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
+  bool _isLoading = false;
+
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
+
+  // Handle email/password sign in
+  Future<void> _signInWithEmailAndPassword() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        if (credential.user!.emailVerified) {
+          Navigator.of(context).pushReplacementNamed("navigationBar");
+        } else {
+          if (mounted) {
+            AwesomeDialog(
+              context: context,
+              dialogType: DialogType.info,
+              animType: AnimType.rightSlide,
+              title: 'Error',
+              desc: 'Please verify your email first',
+              btnOkOnPress: () {},
+            ).show();
+          }
+        }
+      } on FirebaseAuthException catch (e) {
+        print('Firebase Auth Error: ${e.code}');
+        String errorMessage;
+
+        if (e.code == 'user-not-found') {
+          errorMessage = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          errorMessage = 'Wrong password provided for that user.';
+        } else {
+          errorMessage ='Wrong password or email provided!';
+        }
+
+        if (mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            AwesomeDialog(
+              context: context,
+              dialogType: DialogType.error,
+              animType: AnimType.rightSlide,
+              title: 'Error',
+              desc: errorMessage,
+              btnOkOnPress: () {},
+            ).show();
+          });
+        }
+      } catch (e) {
+        print('General Error: $e');
+        if (mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            AwesomeDialog(
+              context: context,
+              dialogType: DialogType.error,
+              animType: AnimType.rightSlide,
+              title: 'Error',
+              desc: 'An unexpected error occurred',
+              btnOkOnPress: () {},
+            ).show();
+          });
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -41,24 +123,24 @@ class _MedicalLoginPageState extends State<MedicalLoginPage> {
                   ),
                   Center(
                     child: Image.asset(
-                      'assets/images/healthy.png', // Replace with your actual logo asset
-                      height: 115,
+                      'assets/images/ssd.png', // Replace with your actual logo asset
+                      height: 130,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 0),
                   Text(
                     'Welcome Back',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: const Color(0xFF1E3A8A),
-                          fontWeight: FontWeight.bold,
-                        ),
+                      color: const Color(0xFF1E3A8A),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Sign in to continue to your medical dashboard',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                      color: Colors.grey[600],
+                    ),
                   ),
                   const SizedBox(height: 40),
                   Form(
@@ -192,69 +274,7 @@ class _MedicalLoginPageState extends State<MedicalLoginPage> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                try {
-                                  final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-                                    email: _emailController.text.trim(),
-                                    password: _passwordController.text.trim(),
-                                  );
-
-                                  if (credential.user!.emailVerified) {
-                                    Navigator.of(context).pushReplacementNamed("navigationBar");
-                                  } else {
-                                    if (mounted) {
-                                      AwesomeDialog(
-                                        context: context,
-                                        dialogType: DialogType.info,
-                                        animType: AnimType.rightSlide,
-                                        title: 'Error',
-                                        desc: 'Please verify your email first',
-                                        btnOkOnPress: () {},
-                                      ).show();
-                                    }
-                                  }
-                                } on FirebaseAuthException catch (e) {
-                                  print('Firebase Auth Error: ${e.code}');
-                                  String errorMessage;
-
-                                  if (e.code == 'user-not-found') {
-                                    errorMessage = 'No user found for that email.';
-                                  } else if (e.code == 'wrong-password') {
-                                    errorMessage = 'Wrong password provided for that user.';
-                                  } else {
-                                    errorMessage ='Wrong password or email provided!';
-                                  }
-
-                                  if (mounted) {
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                                      AwesomeDialog(
-                                        context: context,
-                                        dialogType: DialogType.error,
-                                        animType: AnimType.rightSlide,
-                                        title: 'Error',
-                                        desc: errorMessage,
-                                        btnOkOnPress: () {},
-                                      ).show();
-                                    });
-                                  }
-                                } catch (e) {
-                                  print('General Error: $e');
-                                  if (mounted) {
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                                      AwesomeDialog(
-                                        context: context,
-                                        dialogType: DialogType.error,
-                                        animType: AnimType.rightSlide,
-                                        title: 'Error',
-                                        desc: 'An unexpected error occurred',
-                                        btnOkOnPress: () {},
-                                      ).show();
-                                    });
-                                  }
-                                }
-                              }
-                            },
+                            onPressed: _isLoading ? null : _signInWithEmailAndPassword,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF1E3A8A),
                               foregroundColor: Colors.white,
@@ -263,7 +283,9 @@ class _MedicalLoginPageState extends State<MedicalLoginPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text(
                               'Log In',
                               style: TextStyle(
                                 fontSize: 16,
@@ -283,7 +305,7 @@ class _MedicalLoginPageState extends State<MedicalLoginPage> {
                             ),
                             Padding(
                               padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
+                              const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
                                 'OR',
                                 style: TextStyle(
@@ -306,9 +328,10 @@ class _MedicalLoginPageState extends State<MedicalLoginPage> {
                           children: [
                             _buildSocialButton(
                               icon: 'assets/images/google.png',
-                              onPressed: () {
-                                // Handle Google sign-in
+                              onPressed: () async {
+                                await GoogleAuthService.signInWithGoogle(context);
                               },
+                              isLoading: _isLoading,
                             ),
                           ],
                         ),
@@ -349,10 +372,13 @@ class _MedicalLoginPageState extends State<MedicalLoginPage> {
     );
   }
 
-  Widget _buildSocialButton(
-      {required String icon, required VoidCallback onPressed}) {
+  Widget _buildSocialButton({
+    required String icon,
+    required VoidCallback? onPressed,
+    bool isLoading = false,
+  }) {
     return InkWell(
-      onTap: onPressed,
+      onTap: isLoading ? null : onPressed,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: 60,
@@ -362,7 +388,16 @@ class _MedicalLoginPageState extends State<MedicalLoginPage> {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
-          child: Image.asset(
+          child: isLoading
+              ? const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+            ),
+          )
+              : Image.asset(
             icon,
             height: 24,
           ),

@@ -45,6 +45,7 @@ class _MedicalSignUpPageState extends State<MedicalSignUpPage> {
       'phone': phone,
       'specialization': specialization,
       'createdAt': FieldValue.serverTimestamp(),
+      'authProvider': 'Email Address/Password',
     });
 
     // If you're not using Firestore, implement your database logic here
@@ -83,11 +84,11 @@ class _MedicalSignUpPageState extends State<MedicalSignUpPage> {
                   const SizedBox(height: 15),
                   Center(
                     child: Image.asset(
-                      'assets/images/healthy.png', // Replace with your actual logo asset
-                      height: 115,
+                      'assets/images/ssd.png', // Replace with your actual logo asset
+                      height: 130,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 0),
                   Text(
                     'Create Account',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(

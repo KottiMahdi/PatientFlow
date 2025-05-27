@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../appointement/appointement_page.dart';
-
 
 // Function to create a modified version of addAppointment that includes patient data
 void schedulePatientAppointment(BuildContext context, QueryDocumentSnapshot patientData, VoidCallback fetchData) {
@@ -55,7 +55,7 @@ void schedulePatientAppointment(BuildContext context, QueryDocumentSnapshot pati
         title: Text(
           "Schedule Appointment for $patientName",
           style: TextStyle(
-              color: Colors.blueAccent.shade400,
+              color: const Color(0xFF1E3A8A),
               fontSize: 20,
               fontWeight: FontWeight.bold),
         ),
@@ -78,7 +78,7 @@ void schedulePatientAppointment(BuildContext context, QueryDocumentSnapshot pati
                           borderRadius: BorderRadius.circular(12),
                         ),
                         prefixIcon:
-                        Icon(Icons.person, color: Colors.blueAccent.shade400),
+                        Icon(Icons.person, color: const Color(0xFF1E3A8A)),
                       ),
                     ),
                     SizedBox(height: 16),
@@ -92,7 +92,7 @@ void schedulePatientAppointment(BuildContext context, QueryDocumentSnapshot pati
                           borderRadius: BorderRadius.circular(12),
                         ),
                         prefixIcon:
-                        Icon(Icons.account_tree_rounded, color: Colors.blueAccent.shade400),
+                        Icon(Icons.notes, color: const Color(0xFF1E3A8A)),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -206,30 +206,53 @@ void schedulePatientAppointment(BuildContext context, QueryDocumentSnapshot pati
             onPressed: () async {
               // Validate required fields
               if (_formKey.currentState!.validate()) {
-                // Add new appointment to Firestore
-                await FirebaseFirestore.instance
-                    .collection('appointments')
-                    .add({
-                  'patientName': _patientNameController.text,
-                  'patientId': patientData.id, // Store the patient ID for reference
-                  'date': '${selectedDate!.toLocal().day}/${selectedDate!.toLocal().month}/${selectedDate!.toLocal().year}',
-                  'time': selectedTime!.format(context),
-                  'reason': _reasonController.text,
-                });
+                try {
+                  // Add new appointment to Firestore with user ID
+                  await FirebaseFirestore.instance
+                      .collection('appointments')
+                      .add({
+                    'patientName': _patientNameController.text,
+                    'patientId': patientData.id, // Store the patient ID for reference
+                    'date': '${selectedDate!.toLocal().day}/${selectedDate!.toLocal().month}/${selectedDate!.toLocal().year}',
+                    'time': selectedTime!.format(context),
+                    'reason': _reasonController.text,
+                    'id': FirebaseAuth.instance.currentUser!.uid, // ADD THIS CRITICAL LINE
+                  });
 
-                await FirebaseFirestore.instance
-                    .collection('waiting_room')
-                    .add({
-                  'name': _patientNameController.text.trim(),
-                  'time': selectedTime!.format(context),
-                  'createdAt': FieldValue.serverTimestamp(),
-                  'status': 'RDV',
-                  'date': '${selectedDate!.toLocal().day}/${selectedDate!.toLocal().month}/${selectedDate!.toLocal().year}',
-                });
+                  // Add to waiting room with user ID
+                  await FirebaseFirestore.instance
+                      .collection('waiting_room')
+                      .add({
+                    'name': _patientNameController.text.trim(),
+                    'time': selectedTime!.format(context),
+                    'createdAt': FieldValue.serverTimestamp(),
+                    'status': 'RDV',
+                    'date': '${selectedDate!.toLocal().day}/${selectedDate!.toLocal().month}/${selectedDate!.toLocal().year}',
+                    'id': FirebaseAuth.instance.currentUser!.uid, // ADD THIS CRITICAL LINE
+                  });
 
-                Navigator.of(context).pop(); // Close the dialog
-                fetchData(); // Optional: Refresh data if needed
+                  Navigator.of(context).pop(); // Close the dialog
+                  fetchData(); // Optional: Refresh data if needed
 
+                  // Show success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Appointment scheduled successfully!'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } catch (e) {
+                  // Show error message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error scheduling appointment: $e'),
+                      backgroundColor: Colors.red,
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                  print('Error scheduling appointment: $e');
+                }
               }
             },
             child: Text("Schedule"),
@@ -239,4 +262,3 @@ void schedulePatientAppointment(BuildContext context, QueryDocumentSnapshot pati
     },
   );
 }
-

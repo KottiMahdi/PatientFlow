@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
 import 'package:provider/provider.dart';
 import '../providers/patient_provider_waiting_room.dart';
+import '../providers/profile_provider.dart'; // Import ProfileProvider
 import 'appointement/Schedule_appointment.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,15 +15,15 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   // Add this if not already defined
-  String userRole = 'Doctor'; // Default role, update as needed
-
+  String userRole = 'Not Provided yet'; // Default role, update as needed
 
   @override
   void initState() {
     super.initState();
-    // If you need to fetch initial data, do it here or in the provider
+    // Fetch initial data for both providers
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PatientProvider>(context, listen: false).fetchPatients();
+      Provider.of<ProfileProvider>(context, listen: false).loadUserData(context);
     });
   }
 
@@ -30,6 +31,7 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     // Use listen: true to rebuild when data changes
     final patientProvider = Provider.of<PatientProvider>(context);
+    final profileProvider = Provider.of<ProfileProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -37,23 +39,12 @@ class HomePageState extends State<HomePage> {
           'Medical Management',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF2A79B0),
+        backgroundColor: const Color(0xFF1E3A8A),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {
-              // Add notification functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_circle, color: Colors.white),
-            onPressed: () {
-              // Add profile functionality
-            },
-          ),
+          //
         ],
       ),
-      body: patientProvider.isLoading
+      body: patientProvider.isLoading || profileProvider.isLoading
           ? Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -74,28 +65,37 @@ class HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Replace the entire Row structure with this code
             Row(
               children: [
                 const CircleAvatar(
                   radius: 30,
-                  backgroundColor: Color(0xFF2A79B0),
+                  backgroundColor: Color(0xFF1E3A8A),
                   child: Icon(Icons.person, size: 40, color: Colors.white),
                 ),
                 const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome, Dr. Smith',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    Text(
-                      userRole,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome, ${profileProvider.nameController.text}',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1E3A8A),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        profileProvider.selectedSpecialization ?? userRole,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -121,13 +121,13 @@ class HomePageState extends State<HomePage> {
                         return Theme(
                           data: Theme.of(context).copyWith(
                             colorScheme: ColorScheme.light(
-                              primary: Color(0xFF2A79B0),
+                              primary: const Color(0xFF1E3A8A),
                               onPrimary: Colors.white,
-                              onSurface: Color(0xFF2A79B0),
+                              onSurface: const Color(0xFF1E3A8A),
                             ),
                             textButtonTheme: TextButtonThemeData(
                               style: TextButton.styleFrom(
-                                foregroundColor: Color(0xFF2A79B0),
+                                foregroundColor: const Color(0xFF1E3A8A),
                               ),
                             ),
                           ),
@@ -199,7 +199,7 @@ class HomePageState extends State<HomePage> {
                   icon: Icon(Icons.person),
                   label: Text('Add Patient'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF2A79B0),
+                    backgroundColor: const Color(0xFF1E3A8A),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     shape: RoundedRectangleBorder(
@@ -224,7 +224,7 @@ class HomePageState extends State<HomePage> {
                     style: TextStyle(fontSize: 12),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF2A79B0),
+                    backgroundColor: const Color(0xFF1E3A8A),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     shape: RoundedRectangleBorder(
@@ -293,13 +293,13 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget _buildStatusCard(
-    BuildContext context,
-    IconData icon,
-    String count,
-    String label,
-    Color backgroundColor,
-    Color? iconColor,
-  ) {
+      BuildContext context,
+      IconData icon,
+      String count,
+      String label,
+      Color backgroundColor,
+      Color? iconColor,
+      ) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Expanded(
@@ -314,16 +314,16 @@ class HomePageState extends State<HomePage> {
               Text(
                 count,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: screenWidth < 400 ? 18 : 22,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth < 400 ? 18 : 22,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: screenWidth < 400 ? 11 : 14,
-                    ),
+                  fontSize: screenWidth < 400 ? 11 : 14,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -334,12 +334,12 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget _buildAppointmentCard(
-    BuildContext context,
-    String patientName,
-    String time,
-    String purpose,
-    String status,
-  ) {
+      BuildContext context,
+      String patientName,
+      String time,
+      String purpose,
+      String status,
+      ) {
     Color statusColor;
     switch (status) {
       case 'Waiting':

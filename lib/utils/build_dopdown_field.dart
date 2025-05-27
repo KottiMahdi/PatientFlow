@@ -61,7 +61,7 @@ Widget buildDropdownField(
             labelText: label,
 
             // Icon displayed inside the input field
-            prefixIcon: Icon(icon, color: Color(0xFF2A79B0)),
+            prefixIcon: Icon(icon, color: const Color(0xFF1E3A8A)),
 
             // Background color and padding for the input field
             filled: true,
@@ -82,7 +82,7 @@ Widget buildDropdownField(
           isExpanded: true, // Expands dropdown to fit content width
           dropdownColor: Colors.white, // Background color of the dropdown
           icon: Icon(Icons.arrow_drop_down,
-              color: Color(0xFF2A79B0)), // Updated dropdown icon,
+              color: const Color(0xFF1E3A8A)), // Updated dropdown icon,
           iconSize: 30, // Size of the dropdown icon
           elevation: 8, // Shadow depth for the dropdown
           style: TextStyle(

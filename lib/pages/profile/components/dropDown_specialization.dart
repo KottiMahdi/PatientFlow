@@ -116,10 +116,18 @@ class ProfileDropDownBuilder {
           if (snapshot.hasError) {
             return _buildErrorState(snapshot.error.toString());
           }
-          final options = snapshot.data ?? [];
+
+          List<String> options = snapshot.data ?? [];
           if (options.isEmpty) {
-            return _buildEmptyState();
+            options = ["Not specified"];
           }
+
+          // Ensure current value exists in options list
+          if (currentValue != null && !options.contains(currentValue)) {
+            // Add the current value to options if it doesn't exist
+            options.add(currentValue);
+          }
+
           return _buildDropdownButton(
             context,
             currentValue,
@@ -167,6 +175,9 @@ class ProfileDropDownBuilder {
       String title,
       List<String> options,
       ) {
+    // Ensure no duplicate values in the dropdown items
+    final uniqueOptions = options.toSet().toList();
+
     return DropdownButton<String>(
       value: currentValue,
       hint: Text(
@@ -184,7 +195,7 @@ class ProfileDropDownBuilder {
         fontWeight: FontWeight.w400,
         color: Colors.black,
       ),
-      items: options.map((value) => DropdownMenuItem<String>(
+      items: uniqueOptions.map((value) => DropdownMenuItem<String>(
         value: value,
         child: Text(value),
       )).toList(),
