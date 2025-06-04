@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:management_cabinet_medical_mobile/pages/patients/add_patient_page.dart';
 import 'package:provider/provider.dart';
-import '../providers/patient_provider_waiting_room.dart';
+import '../providers/track_patient_provider.dart';
 import '../providers/profile_provider.dart'; // Import ProfileProvider
 import 'appointement/Schedule_appointment.dart';
 
