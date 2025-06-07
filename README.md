@@ -10,6 +10,8 @@ Concept and development of a medical management mobile application
   patient (e.g. waiting room, in consultation, consultation completed) to 
   optimize the efficiency of the application.
   Technologies: Flutter, Dart, Firebase
+  
+![App Screenshot](assets/images/Untitled.png)
 
 A new Flutter project.
 
