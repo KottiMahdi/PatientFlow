@@ -23,7 +23,8 @@ Concept and development of a medical management mobile application.
 - **Firebase**
 
 ---
-## **Screenshots**
+
+## 📸 Screenshots
   
 ![App Screenshot](assets/images/Untitled.png)
 
